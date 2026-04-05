@@ -5,23 +5,22 @@ export async function GET() {
     const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-    // 🔥 pega 1 link aleatório
-    const links = await prisma.link.findMany({
-      take: 1,
+    // 🔥 pega link com MAIS CLIQUES
+    const link = await prisma.link.findFirst({
       orderBy: {
-        createdAt: "desc",
+        clicks: "desc",
       },
     });
 
-    if (links.length === 0) {
+    if (!link) {
       return Response.json({ message: "Sem links" });
     }
 
-    const link = links[0];
-
     const mensagem = `🔥 ${link.title}
 
-👉 https://SEU-DOMINIO/${link.shortCode}`;
+👉 https://SEU-DOMINIO/${link.shortCode}
+
+⚡ Já teve ${link.clicks} cliques`;
 
     await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
       method: "POST",
