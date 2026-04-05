@@ -4,50 +4,62 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.email) {
-    return Response.json(
-      { error: "Não autorizado." },
-      { status: 401 }
-    );
-  }
+    if (!session?.user?.email) {
+      return Response.json({ error: "Não autorizado." }, { status: 401 });
+    }
 
-  const body = await req.json();
-  const { title, url } = body;
+    const body = await req.json();
+    const { title, url } = body;
 
-  let user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
+    if (!title || !url) {
+      return Response.json(
+        { error: "Título e URL são obrigatórios." },
+        { status: 400 }
+      );
+    }
 
-  if (!user) {
-    user = await prisma.user.create({
+    let user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          password: "123456",
+          plan: "FREE",
+        },
+      });
+    }
+
+    const totalLinks = await prisma.link.count({
+      where: { userId: user.id },
+    });
+
+    if (user.plan === "FREE" && totalLinks >= 5) {
+      return Response.json(
+        { error: "Plano FREE atingiu limite." },
+        { status: 403 }
+      );
+    }
+
+    const link = await prisma.link.create({
       data: {
-        email: session.user.email,
-        password: "123456",
+        title,
+        url,
+        shortCode: nanoid(6),
+        userId: user.id,
       },
     });
-  }
 
-  const totalLinks = await prisma.link.count({
-    where: { userId: user.id },
-  });
-
-  if (totalLinks >= 5) {
+    return Response.json(link);
+  } catch {
     return Response.json(
-      { error: "Plano FREE atingiu limite." },
-      { status: 403 }
+      { error: "Erro ao criar link." },
+      { status: 500 }
     );
   }
-
-  const link = await prisma.link.create({
-    data: {
-      title,
-      url,
-      shortCode: nanoid(6),
-      userId: user.id,
-    },
-  });
-
-  return Response.json(link);
 }
