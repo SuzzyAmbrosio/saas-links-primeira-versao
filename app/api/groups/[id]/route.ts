@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 async function getCurrentUser() {
   const session = await getServerSession(authOptions);
 
@@ -14,10 +18,7 @@ async function getCurrentUser() {
   });
 }
 
-export async function GET(
-  _req: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(_req: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 
@@ -25,9 +26,11 @@ export async function GET(
       return Response.json({ error: "Não autenticado." }, { status: 401 });
     }
 
+    const { id } = await context.params;
+
     const group = await prisma.group.findFirst({
       where: {
-        id: context.params.id,
+        id,
         userId: user.id,
       },
     });
@@ -42,10 +45,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function PUT(req: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 
@@ -53,9 +53,11 @@ export async function PUT(
       return Response.json({ error: "Não autenticado." }, { status: 401 });
     }
 
+    const { id } = await context.params;
+
     const existing = await prisma.group.findFirst({
       where: {
-        id: context.params.id,
+        id,
         userId: user.id,
       },
     });
@@ -94,10 +96,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  _req: Request,
-  context: { params: { id: string } }
-) {
+export async function DELETE(_req: Request, context: RouteContext) {
   try {
     const user = await getCurrentUser();
 
@@ -105,9 +104,11 @@ export async function DELETE(
       return Response.json({ error: "Não autenticado." }, { status: 401 });
     }
 
+    const { id } = await context.params;
+
     const existing = await prisma.group.findFirst({
       where: {
-        id: context.params.id,
+        id,
         userId: user.id,
       },
     });
