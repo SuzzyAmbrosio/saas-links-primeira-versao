@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 
 type LinkItem = {
@@ -28,11 +28,20 @@ export default function DashboardPage() {
   const planoAtual =
     session?.user?.email === "admin@saaslinks.com" ? "PRO" : "FREE";
 
+  const totalCliques = useMemo(() => {
+    return links.reduce((acc, item) => acc + item.clicks, 0);
+  }, [links]);
+
+  const ganhosEstimados = useMemo(() => {
+    return (totalCliques * 0.05).toFixed(2);
+  }, [totalCliques]);
+
   async function carregarLinks() {
     try {
       const res = await fetch("/api/links/list", {
         cache: "no-store",
       });
+
       const data = await res.json();
       setLinks(Array.isArray(data) ? data : []);
     } catch {
@@ -132,12 +141,6 @@ export default function DashboardPage() {
     }
   }
 
-  function copiarLink(shortCode: string) {
-    const linkCompleto = `${window.location.origin}/${shortCode}`;
-    navigator.clipboard.writeText(linkCompleto);
-    setMessage("Link copiado com sucesso.");
-  }
-
   async function enviarTelegram(link: LinkItem) {
     setEnviandoId(link.id);
     setMessage("");
@@ -168,6 +171,12 @@ export default function DashboardPage() {
     } finally {
       setEnviandoId(null);
     }
+  }
+
+  function copiarLink(shortCode: string) {
+    const linkCompleto = `${window.location.origin}/${shortCode}`;
+    navigator.clipboard.writeText(linkCompleto);
+    setMessage("Link copiado com sucesso.");
   }
 
   if (status === "loading") {
@@ -244,7 +253,8 @@ export default function DashboardPage() {
                 🚀 Painel de Controle
               </h1>
               <p className="mt-2 text-slate-400">
-                Crie links encurtados, acompanhe cliques e envie para o Telegram.
+                Crie links encurtados, acompanhe cliques, importe produtos e
+                envie para o Telegram.
               </p>
             </div>
 
@@ -259,7 +269,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg">
               <div className="text-sm text-slate-400">Total de links</div>
               <div className="mt-2 text-3xl font-bold">{links.length}</div>
@@ -267,15 +277,20 @@ export default function DashboardPage() {
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg">
               <div className="text-sm text-slate-400">Cliques totais</div>
-              <div className="mt-2 text-3xl font-bold">
-                {links.reduce((acc, item) => acc + item.clicks, 0)}
-              </div>
+              <div className="mt-2 text-3xl font-bold">{totalCliques}</div>
             </div>
 
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg">
               <div className="text-sm text-slate-400">Links disponíveis</div>
               <div className="mt-2 text-3xl font-bold">
                 {planoAtual === "PRO" ? "∞" : Math.max(0, 5 - links.length)}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-lg">
+              <div className="text-sm text-slate-400">Ganhos estimados</div>
+              <div className="mt-2 text-3xl font-bold text-green-400">
+                R$ {ganhosEstimados}
               </div>
             </div>
           </div>
