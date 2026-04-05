@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 export default function UpgradePage() {
+  const { data: session } = useSession();
+
   const [qr, setQr] = useState("");
   const [valor, setValor] = useState("");
+  const [message, setMessage] = useState("");
 
   async function gerarPix() {
     const res = await fetch("/api/payment/pix", {
@@ -15,6 +19,28 @@ export default function UpgradePage() {
 
     setQr(data.qrCode);
     setValor(data.valor);
+  }
+
+  async function confirmarPagamento() {
+    if (!session?.user?.email) return;
+
+    const res = await fetch("/api/payment/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: session.user.email,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setMessage("Plano PRO ativado 🚀");
+    } else {
+      setMessage(data.error || "Erro ao ativar plano");
+    }
   }
 
   return (
@@ -57,7 +83,18 @@ export default function UpgradePage() {
             >
               Copiar código PIX
             </button>
+
+            <button
+              onClick={confirmarPagamento}
+              className="mt-4 w-full rounded-lg bg-purple-500 px-4 py-3 font-semibold"
+            >
+              Já paguei
+            </button>
           </div>
+        )}
+
+        {message && (
+          <p className="mt-4 text-green-400">{message}</p>
         )}
       </div>
     </main>
