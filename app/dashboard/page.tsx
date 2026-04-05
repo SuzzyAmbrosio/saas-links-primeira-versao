@@ -104,7 +104,7 @@ function Sidebar() {
   );
 }
 
-function Topbar(email?: string | null) {
+function Topbar({ email }: { email?: string | null }) {
   return (
     <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
       <div className="h-11 flex-1 rounded-lg border border-slate-200 bg-slate-50" />
