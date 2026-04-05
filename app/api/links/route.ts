@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     if (user.plan === "FREE" && totalLinks >= 5) {
       return Response.json(
-        { error: "Plano FREE atingiu limite." },
+        { error: "Plano FREE atingiu limite. Atualize para PRO 🚀" },
         { status: 403 }
       );
     }
