@@ -1,6 +1,11 @@
 import "./globals.css";
 import Providers from "./providers";
 
+export const metadata = {
+  title: "LinkPro",
+  description: "Plataforma de links, automação e divulgação",
+};
+
 export default function RootLayout({
   children,
 }: {
