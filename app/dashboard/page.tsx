@@ -180,6 +180,12 @@ export default function DashboardPage() {
 
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
               Plano atual: {session.user?.email === "admin@saaslinks.com" ? "PRO" : "FREE"}
+              <a
+                href="/upgrade"
+                className="mt-3 inline-block rounded-lg bg-purple-500 px-4 py-2 text-sm font-semibold text-white"
+              >
+                🚀 Upgrade para PRO
+              </a>
             </div>
           </div>
 
