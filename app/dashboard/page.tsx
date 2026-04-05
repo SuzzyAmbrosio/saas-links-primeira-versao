@@ -159,7 +159,13 @@ export default function DashboardPage() {
                       {link.url}
                     </div>
                     <div className="mt-2 text-sm text-emerald-400">
-                      /{link.shortCode}
+                      <a
+                        href={`/${link.shortCode}`}
+                        target="_blank"
+                        className="text-emerald-400 underline"
+                      >
+                        {typeof window !== "undefined" && window.location.origin}/{link.shortCode}
+                      </a>
                     </div>
                     <div className="mt-2 text-sm text-slate-400">
                       Cliques: {link.clicks}
