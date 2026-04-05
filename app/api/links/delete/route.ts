@@ -28,8 +28,22 @@ export async function POST(req: Request) {
       );
     }
 
+    const link = await prisma.link.findFirst({
+      where: {
+        id,
+        userId: user.id,
+      },
+    });
+
+    if (!link) {
+      return Response.json(
+        { error: "Link não encontrado." },
+        { status: 404 }
+      );
+    }
+
     await prisma.link.delete({
-      where: { id, userId: user.id },
+      where: { id: link.id },
     });
 
     return Response.json({ success: true });
