@@ -148,36 +148,41 @@ export default function DashboardPage() {
   }
 
   async function enviarTelegram(link: LinkItem) {
-    setEnviandoId(link.id);
-    setMessage("");
+  setEnviandoId(link.id);
+  setMessage("");
 
-    try {
-      const mensagem = `🔥 ${link.title}
+  try {
+    const mensagem = `🔥 ${link.title} com desconto HOJE!
 
-👉 ${window.location.origin}/${link.shortCode}`;
+💥 Oferta imperdível  
+🚚 Entrega rápida  
+⭐ Produto bem avaliado  
 
-      const res = await fetch("/api/telegram/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: mensagem }),
-      });
+👉 Compre agora:
+${window.location.origin}/${link.shortCode}`;
 
-      const data = await res.json();
+    const res = await fetch("/api/telegram/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message: mensagem }),
+    });
 
-      if (!res.ok) {
-        setMessage(data.error || "Erro ao enviar para o Telegram.");
-        return;
-      }
+    const data = await res.json();
 
-      setMessage("Enviado para o Telegram com sucesso 🚀");
-    } catch {
-      setMessage("Erro ao enviar para o Telegram.");
-    } finally {
-      setEnviandoId(null);
+    if (!res.ok) {
+      setMessage(data.error || "Erro ao enviar para o Telegram.");
+      return;
     }
+
+    setMessage("Enviado com copy de alta conversão 🚀");
+  } catch {
+    setMessage("Erro ao enviar para o Telegram.");
+  } finally {
+    setEnviandoId(null);
   }
+}
 
   function copiarLink(shortCode: string) {
     const linkCompleto = `${window.location.origin}/${shortCode}`;
