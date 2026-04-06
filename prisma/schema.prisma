@@ -88,16 +88,6 @@ model UserSettings {
   userId                   String   @unique
   user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  telegramBotToken         String   @default("")
-  telegramChatId           String   @default("")
-  telegramDefaultMessage   String   @default("")
-  telegramSignature        String   @default("")
-
-  whatsappGroupName        String   @default("")
-  whatsappInviteLink       String   @default("")
-  whatsappDefaultMessage   String   @default("")
-  whatsappFooterCta        String   @default("")
-
   createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  updatedAt                DateTime @default(now()) @updatedAt
 }
