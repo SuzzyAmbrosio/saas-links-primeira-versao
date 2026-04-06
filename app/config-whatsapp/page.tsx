@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -57,6 +57,7 @@ function Sidebar() {
         <nav className="space-y-1">
           {items.map((item) => {
             const Icon = item.icon;
+
             return (
               <Link
                 key={item.label}
@@ -138,14 +139,17 @@ function StarterBanner() {
 function CardSection({
   title,
   children,
+  extra,
 }: {
   title: string;
   children: React.ReactNode;
+  extra?: React.ReactNode;
 }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h3 className="text-[14px] font-bold text-slate-700">{title}</h3>
+        {extra}
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -161,6 +165,8 @@ export default function ConfigWhatsappPage() {
   const [footerCta, setFooterCta] = useState(
     "Entre no nosso grupo para receber promoções todos os dias."
   );
+  const [includeInviteLink, setIncludeInviteLink] = useState(true);
+  const [shortenText, setShortenText] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "tested">("idle");
 
   function handleSave() {
@@ -170,6 +176,21 @@ export default function ConfigWhatsappPage() {
   function handleTest() {
     setStatus("tested");
   }
+
+  const previewText = useMemo(() => {
+    const base = shortenText
+      ? `${defaultMessage.split("\n")[0]}\n\n🛒 Link abaixo:`
+      : defaultMessage;
+
+    const parts = [
+      base,
+      "https://seudominio.com/oferta-exemplo",
+      footerCta,
+      includeInviteLink && inviteLink ? `Convite do grupo:\n${inviteLink}` : "",
+    ].filter(Boolean);
+
+    return parts.join("\n\n");
+  }, [defaultMessage, footerCta, inviteLink, includeInviteLink, shortenText]);
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
@@ -184,7 +205,7 @@ export default function ConfigWhatsappPage() {
             <div>
               <h1 className="text-[24px] font-bold text-slate-800">Configurações do WhatsApp</h1>
               <p className="mt-1 text-[13px] text-slate-500">
-                Configure grupos, canais e a estrutura padrão das mensagens.
+                Configure grupos, canais e o formato padrão das mensagens.
               </p>
             </div>
 
@@ -276,6 +297,28 @@ export default function ConfigWhatsappPage() {
                   />
                 </div>
               </CardSection>
+
+              <CardSection title="Opções da mensagem">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                    <span>Incluir link do grupo</span>
+                    <input
+                      type="checkbox"
+                      checked={includeInviteLink}
+                      onChange={() => setIncludeInviteLink(!includeInviteLink)}
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                    <span>Mensagem curta</span>
+                    <input
+                      type="checkbox"
+                      checked={shortenText}
+                      onChange={() => setShortenText(!shortenText)}
+                    />
+                  </label>
+                </div>
+              </CardSection>
             </div>
 
             <div className="space-y-5">
@@ -286,25 +329,39 @@ export default function ConfigWhatsappPage() {
                       <MessageCircle className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-800">{groupName || "Grupo WhatsApp"}</p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {groupName || "Grupo WhatsApp"}
+                      </p>
                       <p className="text-[12px] text-slate-500">Prévia do WhatsApp</p>
                     </div>
                   </div>
 
                   <div className="max-w-[420px] rounded-2xl rounded-tl-md bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
-                    <div className="whitespace-pre-line">{defaultMessage}</div>
+                    <div className="whitespace-pre-line">{previewText}</div>
+                  </div>
+                </div>
+              </CardSection>
 
-                    <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 font-semibold text-emerald-700">
-                      https://seudominio.com/oferta-exemplo
-                    </div>
+              <CardSection title="Resumo da configuração">
+                <div className="space-y-3 text-[13px] text-slate-600">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <strong className="text-slate-700">Grupo:</strong>{" "}
+                    {groupName || "Não informado"}
+                  </div>
 
-                    <div className="mt-4 whitespace-pre-line text-slate-600">{footerCta}</div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <strong className="text-slate-700">Convite:</strong>{" "}
+                    {inviteLink ? "Configurado" : "Não informado"}
+                  </div>
 
-                    {inviteLink ? (
-                      <div className="mt-4 break-all text-[12px] text-emerald-700">
-                        Convite: {inviteLink}
-                      </div>
-                    ) : null}
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <strong className="text-slate-700">Link do grupo:</strong>{" "}
+                    {includeInviteLink ? "Incluído" : "Oculto"}
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <strong className="text-slate-700">Modo curto:</strong>{" "}
+                    {shortenText ? "Sim" : "Não"}
                   </div>
                 </div>
               </CardSection>
@@ -318,7 +375,7 @@ export default function ConfigWhatsappPage() {
                     Evite textos muito longos para manter a taxa de clique alta.
                   </div>
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Deixe o link de convite sempre atualizado para facilitar entrada no grupo.
+                    Deixe o link do grupo sempre atualizado para facilitar entrada.
                   </div>
                 </div>
               </CardSection>
