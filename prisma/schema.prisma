@@ -12,12 +12,22 @@ model User {
   name      String?
   email     String   @unique
   password  String?
-  createdAt DateTime @default(now())
   plan String @default("FREE")
+
+  telegramBotToken      String   @default("")
+  telegramChatId        String   @default("")
+  telegramDefaultMessage String  @default("")
+  telegramSignature     String   @default("")
+  telegramParseMode     String   @default("HTML")
+  telegramDisablePreview Boolean @default(false)
+  telegramPinAfterSend  Boolean  @default(false)
 
   links     Link[]
   groups    Group[]
   settings  UserSettings?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 
