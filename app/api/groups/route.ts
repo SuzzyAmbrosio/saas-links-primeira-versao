@@ -2,74 +2,72 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-function makeInternalCode() {
+async function getCurrentUser() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return null;
+  }
+
+  return prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+}
+
+function generateInternalCode() {
   return String(Math.floor(10000 + Math.random() * 90000));
 }
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getCurrentUser();
 
-    if (!session?.user?.email) {
+    if (!user) {
       return Response.json({ error: "Não autenticado." }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (!user) {
-      return Response.json({ error: "Usuário não encontrado." }, { status: 404 });
-    }
-
     const groups = await prisma.group.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        links: true,
+      },
     });
 
-    return Response.json(groups);
+    return Response.json(
+      groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        internalCode: group.internalCode,
+        postAuto: group.postAuto,
+        products: group.links.length,
+        intervalMinutes: group.intervalMinutes,
+        randomMode: group.randomMode,
+        lastPostedAt: group.lastPostedAt,
+        isActive: group.isActive,
+      }))
+    );
   } catch {
-    return Response.json({ error: "Erro ao listar grupos." }, { status: 500 });
+    return Response.json({ error: "Erro ao buscar grupos." }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getCurrentUser();
 
-    if (!session?.user?.email) {
+    if (!user) {
       return Response.json({ error: "Não autenticado." }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    const body = await req.json();
+    const name = String(body?.name ?? "Novo Grupo").trim() || "Novo Grupo";
 
-    if (!user) {
-      return Response.json({ error: "Usuário não encontrado." }, { status: 404 });
-    }
-
-    const body = await req.json().catch(() => ({}));
-    const name = String(body?.name || "").trim();
-
-    if (!name) {
-      return Response.json({ error: "Nome do grupo é obrigatório." }, { status: 400 });
-    }
-
-    const userGroupsCount = await prisma.group.count({
-      where: { userId: user.id },
-    });
-
-    const isPro = user.plan === "PRO";
-
-    if (!isPro && userGroupsCount >= 1) {
-      return Response.json(
-        { error: "Seu plano atual permite apenas 1 grupo." },
-        { status: 403 }
-      );
-    }
-
-    let internalCode = makeInternalCode();
+    let internalCode = generateInternalCode();
 
     for (let i = 0; i < 5; i++) {
       const exists = await prisma.group.findFirst({
@@ -77,10 +75,10 @@ export async function POST(req: Request) {
       });
 
       if (!exists) break;
-      internalCode = makeInternalCode();
+      internalCode = generateInternalCode();
     }
 
-    const created = await prisma.group.create({
+    const group = await prisma.group.create({
       data: {
         name,
         internalCode,
@@ -89,13 +87,18 @@ export async function POST(req: Request) {
         intervalMinutes: 30,
         randomMode: false,
         whatsappMessage: "",
+        telegramToken: "",
+        telegramChatId: "",
+        shopeeAffiliateId: "",
+        shopeeSubId: "",
         postTitle: "",
         postPriceLabel: "",
         postCta: "",
+        isActive: true,
       },
     });
 
-    return Response.json(created, { status: 201 });
+    return Response.json(group);
   } catch {
     return Response.json({ error: "Erro ao criar grupo." }, { status: 500 });
   }
