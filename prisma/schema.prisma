@@ -17,6 +17,7 @@ model User {
   links     Link[]
   groups    Group[]
   settings  UserSettings?
+  postLogs  PostLog[]
 
   createdAt DateTime      @default(now())
   updatedAt DateTime      @default(now()) @updatedAt
@@ -92,4 +93,21 @@ model UserSettings {
 
   createdAt                 DateTime @default(now())
   updatedAt                 DateTime @default(now()) @updatedAt
+}
+
+model PostLog {
+  id          String   @id @default(cuid())
+  status      String
+  detail      String   @default("")
+
+  groupId      String?
+  groupName    String?
+  linkId       String?
+  linkTitle    String?
+
+  telegramChatId String? 
+  postedAt     DateTime @default(now())
+
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
