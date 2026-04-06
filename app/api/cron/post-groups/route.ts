@@ -41,15 +41,8 @@ function diffMinutes(from: Date, to: Date) {
   return Math.floor((to.getTime() - from.getTime()) / 1000 / 60);
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return Response.json({ error: "Não autorizado." }, { status: 401 });
-    }
-
     const now = new Date();
 
     const groups = await prisma.group.findMany({
@@ -75,7 +68,7 @@ export async function GET(req: Request) {
     const results: Array<{
       groupId: string;
       groupName: string;
-      status: string;
+      status: "posted" | "skipped" | "error";
       detail?: string;
     }> = [];
 
@@ -83,6 +76,7 @@ export async function GET(req: Request) {
       try {
         if (group.lastPostedAt) {
           const minutes = diffMinutes(group.lastPostedAt, now);
+
           if (minutes < group.intervalMinutes) {
             results.push({
               groupId: group.id,
@@ -94,21 +88,20 @@ export async function GET(req: Request) {
           }
         }
 
-        let botToken =
+        const settings = group.user.settings;
+
+        const botToken =
           group.telegramToken?.trim() ||
-          group.user.settings?.telegramBotToken?.trim() ||
+          settings?.telegramBotToken?.trim() ||
           "";
 
-        let chatId =
+        const chatId =
           group.telegramChatId?.trim() ||
-          group.user.settings?.telegramChatId?.trim() ||
+          settings?.telegramChatId?.trim() ||
           "";
 
-        const parseMode =
-          group.user.settings?.telegramParseMode?.trim() || "HTML";
-        const disablePreview = Boolean(
-          group.user.settings?.telegramDisablePreview
-        );
+        const parseMode = settings?.telegramParseMode?.trim() || "HTML";
+        const disablePreview = Boolean(settings?.telegramDisablePreview);
 
         if (!botToken || !chatId) {
           results.push({
@@ -152,7 +145,9 @@ export async function GET(req: Request) {
         }
 
         const baseUrl =
-          process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "";
+          process.env.NEXTAUTH_URL?.replace(/\/$/, "") ||
+          process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+          "";
 
         const shortUrl = baseUrl
           ? `${baseUrl}/${selectedLink.shortCode}`
@@ -164,8 +159,8 @@ export async function GET(req: Request) {
           customTitle: group.postTitle,
           priceLabel: group.postPriceLabel,
           cta: group.postCta,
-          defaultMessage: group.user.settings?.telegramDefaultMessage,
-          signature: group.user.settings?.telegramSignature,
+          defaultMessage: settings?.telegramDefaultMessage,
+          signature: settings?.telegramSignature,
         });
 
         const telegramRes = await fetch(
