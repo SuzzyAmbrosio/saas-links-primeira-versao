@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ExternalLink,
   LayoutDashboard,
+  Loader2,
   Megaphone,
   MessageCircle,
   Save,
@@ -168,10 +169,90 @@ export default function ConfigTelegramPage() {
   const [parseMode, setParseMode] = useState("HTML");
   const [disablePreview, setDisablePreview] = useState(false);
   const [pinAfterSend, setPinAfterSend] = useState(false);
-  const [status, setStatus] = useState<"idle" | "saved" | "tested">("idle");
 
-  function handleSave() {
-    setStatus("saved");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saved" | "tested" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function loadConfig() {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const res = await fetch("/api/user-config/telegram", {
+        cache: "no-store",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(data?.error || "Erro ao carregar configurações.");
+        return;
+      }
+
+      setBotToken(data?.botToken ?? "");
+      setChatId(data?.chatId ?? "");
+      setDefaultMessage(
+        data?.defaultMessage ||
+          "🔥 Oferta imperdível do dia!\n\n✅ Produto selecionado\n🚚 Envio rápido\n⭐ Aproveite enquanto durar\n\n🛒 Confira agora no link abaixo:"
+      );
+      setSignature(
+        data?.signature || "Entre no canal para receber mais ofertas todos os dias."
+      );
+      setParseMode(data?.parseMode ?? "HTML");
+      setDisablePreview(Boolean(data?.disablePreview));
+      setPinAfterSend(Boolean(data?.pinAfterSend));
+    } catch {
+      setStatus("error");
+      setErrorMessage("Erro ao carregar configurações.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+      setStatus("idle");
+      setErrorMessage("");
+
+      const res = await fetch("/api/user-config/telegram", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          botToken,
+          chatId,
+          defaultMessage,
+          signature,
+          parseMode,
+          disablePreview,
+          pinAfterSend,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(data?.error || "Erro ao salvar configurações.");
+        return;
+      }
+
+      setStatus("saved");
+    } catch {
+      setStatus("error");
+      setErrorMessage("Erro ao salvar configurações.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleTest() {
@@ -212,10 +293,11 @@ export default function ConfigTelegramPage() {
 
               <button
                 onClick={handleSave}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white hover:bg-blue-700"
+                disabled={saving || loading}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white hover:bg-blue-700 disabled:opacity-60"
               >
-                <Save className="h-4 w-4" />
-                Salvar configurações
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? "Salvando..." : "Salvar configurações"}
               </button>
             </div>
           </div>
@@ -223,7 +305,7 @@ export default function ConfigTelegramPage() {
           {status === "saved" && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
-              Configurações salvas localmente. Próximo passo: conectar ao banco.
+              Configurações salvas com sucesso.
             </div>
           )}
 
@@ -234,167 +316,183 @@ export default function ConfigTelegramPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <CardSection title="Conexão do bot">
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Bot Token
-                    </label>
-                    <input
-                      value={botToken}
-                      onChange={(e) => setBotToken(e.target.value)}
-                      placeholder="Ex: 123456789:AA..."
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Chat ID / Canal ID
-                    </label>
-                    <input
-                      value={chatId}
-                      onChange={(e) => setChatId(e.target.value)}
-                      placeholder="Ex: -1001234567890"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-              </CardSection>
-
-              <CardSection title="Mensagem padrão">
-                <div>
-                  <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                    Texto principal
-                  </label>
-                  <textarea
-                    value={defaultMessage}
-                    onChange={(e) => setDefaultMessage(e.target.value)}
-                    className="min-h-[170px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
-                </div>
-              </CardSection>
-
-              <CardSection title="Rodapé / assinatura">
-                <div>
-                  <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                    CTA final
-                  </label>
-                  <textarea
-                    value={signature}
-                    onChange={(e) => setSignature(e.target.value)}
-                    className="min-h-[110px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
-                </div>
-              </CardSection>
-
-              <CardSection title="Opções do envio">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Parse mode
-                    </label>
-                    <select
-                      value={parseMode}
-                      onChange={(e) => setParseMode(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    >
-                      <option value="HTML">HTML</option>
-                      <option value="Markdown">Markdown</option>
-                      <option value="MarkdownV2">MarkdownV2</option>
-                      <option value="Plain">Sem formatação</option>
-                    </select>
-                  </div>
-
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[13px] text-slate-600">
-                    Escolha o formato que será usado quando a API real do Telegram for conectada.
-                  </div>
-
-                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
-                    <span>Desativar preview do link</span>
-                    <input
-                      type="checkbox"
-                      checked={disablePreview}
-                      onChange={() => setDisablePreview(!disablePreview)}
-                    />
-                  </label>
-
-                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
-                    <span>Fixar mensagem após envio</span>
-                    <input
-                      type="checkbox"
-                      checked={pinAfterSend}
-                      onChange={() => setPinAfterSend(!pinAfterSend)}
-                    />
-                  </label>
-                </div>
-              </CardSection>
+          {status === "error" && (
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              <AlertCircle className="h-4 w-4" />
+              {errorMessage || "Erro ao processar a configuração."}
             </div>
+          )}
 
-            <div className="space-y-5">
-              <CardSection title="Preview da mensagem">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500 text-white">
-                      <Send className="h-4 w-4" />
-                    </div>
+          {loading ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+              <div className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando configurações...
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+              <div className="space-y-5">
+                <CardSection title="Conexão do bot">
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-sm font-bold text-slate-800">Bot de Ofertas</p>
-                      <p className="text-[12px] text-slate-500">Prévia do Telegram</p>
+                      <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                        Bot Token
+                      </label>
+                      <input
+                        value={botToken}
+                        onChange={(e) => setBotToken(e.target.value)}
+                        placeholder="Ex: 123456789:AA..."
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                        Chat ID / Canal ID
+                      </label>
+                      <input
+                        value={chatId}
+                        onChange={(e) => setChatId(e.target.value)}
+                        placeholder="Ex: -1001234567890"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                      />
                     </div>
                   </div>
+                </CardSection>
 
-                  <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
-                    <div className="whitespace-pre-line">{previewText}</div>
+                <CardSection title="Mensagem padrão">
+                  <div>
+                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                      Texto principal
+                    </label>
+                    <textarea
+                      value={defaultMessage}
+                      onChange={(e) => setDefaultMessage(e.target.value)}
+                      className="min-h-[170px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                    />
                   </div>
-                </div>
-              </CardSection>
+                </CardSection>
 
-              <CardSection title="Resumo da configuração">
-                <div className="space-y-3 text-[13px] text-slate-600">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Bot token:</strong>{" "}
-                    {botToken ? "Preenchido" : "Não informado"}
+                <CardSection title="Rodapé / assinatura">
+                  <div>
+                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                      CTA final
+                    </label>
+                    <textarea
+                      value={signature}
+                      onChange={(e) => setSignature(e.target.value)}
+                      className="min-h-[110px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                    />
                   </div>
+                </CardSection>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Chat ID:</strong>{" "}
-                    {chatId || "Não informado"}
-                  </div>
+                <CardSection title="Opções do envio">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                        Parse mode
+                      </label>
+                      <select
+                        value={parseMode}
+                        onChange={(e) => setParseMode(e.target.value)}
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                      >
+                        <option value="HTML">HTML</option>
+                        <option value="Markdown">Markdown</option>
+                        <option value="MarkdownV2">MarkdownV2</option>
+                        <option value="Plain">Sem formatação</option>
+                      </select>
+                    </div>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Parse mode:</strong> {parseMode}
-                  </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[13px] text-slate-600">
+                      Escolha o formato que será usado quando a API real do Telegram for conectada.
+                    </div>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Preview do link:</strong>{" "}
-                    {disablePreview ? "Desativado" : "Ativado"}
-                  </div>
+                    <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                      <span>Desativar preview do link</span>
+                      <input
+                        type="checkbox"
+                        checked={disablePreview}
+                        onChange={() => setDisablePreview(!disablePreview)}
+                      />
+                    </label>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Fixar após envio:</strong>{" "}
-                    {pinAfterSend ? "Sim" : "Não"}
+                    <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                      <span>Fixar mensagem após envio</span>
+                      <input
+                        type="checkbox"
+                        checked={pinAfterSend}
+                        onChange={() => setPinAfterSend(!pinAfterSend)}
+                      />
+                    </label>
                   </div>
-                </div>
-              </CardSection>
+                </CardSection>
+              </div>
 
-              <CardSection title="Dicas rápidas">
-                <div className="space-y-3 text-[13px] text-slate-600">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    O Chat ID de canais costuma começar com <strong>-100</strong>.
+              <div className="space-y-5">
+                <CardSection title="Preview da mensagem">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sky-500 text-white">
+                        <Send className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">Bot de Ofertas</p>
+                        <p className="text-[12px] text-slate-500">Prévia do Telegram</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
+                      <div className="whitespace-pre-line">{previewText}</div>
+                    </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Use mensagens curtas, objetivas e com CTA forte para aumentar cliques.
+                </CardSection>
+
+                <CardSection title="Resumo da configuração">
+                  <div className="space-y-3 text-[13px] text-slate-600">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Bot token:</strong>{" "}
+                      {botToken ? "Preenchido" : "Não informado"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Chat ID:</strong>{" "}
+                      {chatId || "Não informado"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Parse mode:</strong> {parseMode}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Preview do link:</strong>{" "}
+                      {disablePreview ? "Desativado" : "Ativado"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Fixar após envio:</strong>{" "}
+                      {pinAfterSend ? "Sim" : "Não"}
+                    </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Quando conectar a API real, essa tela pode reaproveitar sua rota de teste/envio.
+                </CardSection>
+
+                <CardSection title="Dicas rápidas">
+                  <div className="space-y-3 text-[13px] text-slate-600">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      O Chat ID de canais costuma começar com <strong>-100</strong>.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Use mensagens curtas, objetivas e com CTA forte para aumentar cliques.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Essa tela já salva por usuário no banco.
+                    </div>
                   </div>
-                </div>
-              </CardSection>
+                </CardSection>
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
