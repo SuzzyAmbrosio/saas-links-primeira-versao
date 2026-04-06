@@ -54,6 +54,7 @@ function Sidebar() {
     { href: "#", label: "Assinatura", icon: Star },
     { href: "#", label: "Afiliados", icon: Tag },
     { href: "#", label: "Vídeos", icon: Bot },
+    { href: "/metricas", label: "Métricas", icon: Activity },
   ];
 
   return (
