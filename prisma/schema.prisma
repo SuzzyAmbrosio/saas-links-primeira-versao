@@ -24,13 +24,14 @@ model Link {
   url       String
   shortCode String   @unique
   clicks    Int      @default(0)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  groupId   String?
+  group     Group?   @relation(fields: [groupId], references: [id])
+
   createdAt DateTime @default(now())
-
-  userId String
-  user   User @relation(fields: [userId], references: [id])
-
-  groupId String?
-  group   Group? @relation(fields: [groupId], references: [id])
 }
 
 model Group {
