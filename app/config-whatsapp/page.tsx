@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   Bell,
@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ExternalLink,
   LayoutDashboard,
+  Loader2,
   Megaphone,
   MessageCircle,
   Save,
@@ -167,10 +168,88 @@ export default function ConfigWhatsappPage() {
   );
   const [includeInviteLink, setIncludeInviteLink] = useState(true);
   const [shortenText, setShortenText] = useState(false);
-  const [status, setStatus] = useState<"idle" | "saved" | "tested">("idle");
 
-  function handleSave() {
-    setStatus("saved");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saved" | "tested" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function loadConfig() {
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const res = await fetch("/api/user-config/whatsapp", {
+        cache: "no-store",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(data?.error || "Erro ao carregar configurações.");
+        return;
+      }
+
+      setGroupName(data?.groupName || "Promoções do Dia");
+      setInviteLink(data?.inviteLink ?? "");
+      setDefaultMessage(
+        data?.defaultMessage ||
+          "🔥 Olha essa oferta que acabou de sair!\n\n✅ Produto selecionado\n💸 Preço promocional\n🚚 Aproveite antes que acabe\n\n🛒 Link abaixo:"
+      );
+      setFooterCta(
+        data?.footerCta || "Entre no nosso grupo para receber promoções todos os dias."
+      );
+      setIncludeInviteLink(Boolean(data?.includeInviteLink));
+      setShortenText(Boolean(data?.shortenText));
+    } catch {
+      setStatus("error");
+      setErrorMessage("Erro ao carregar configurações.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+      setStatus("idle");
+      setErrorMessage("");
+
+      const res = await fetch("/api/user-config/whatsapp", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          groupName,
+          inviteLink,
+          defaultMessage,
+          footerCta,
+          includeInviteLink,
+          shortenText,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(data?.error || "Erro ao salvar configurações.");
+        return;
+      }
+
+      setStatus("saved");
+    } catch {
+      setStatus("error");
+      setErrorMessage("Erro ao salvar configurações.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleTest() {
@@ -220,10 +299,11 @@ export default function ConfigWhatsappPage() {
 
               <button
                 onClick={handleSave}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white hover:bg-blue-700"
+                disabled={saving || loading}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white hover:bg-blue-700 disabled:opacity-60"
               >
-                <Save className="h-4 w-4" />
-                Salvar configurações
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? "Salvando..." : "Salvar configurações"}
               </button>
             </div>
           </div>
@@ -231,7 +311,7 @@ export default function ConfigWhatsappPage() {
           {status === "saved" && (
             <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
               <CheckCircle2 className="h-4 w-4" />
-              Configurações salvas localmente. Próximo passo: conectar ao banco.
+              Configurações salvas com sucesso.
             </div>
           )}
 
@@ -242,145 +322,161 @@ export default function ConfigWhatsappPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <CardSection title="Grupo / Canal">
-                <div className="space-y-4">
-                  <div>
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Nome do grupo ou canal
-                    </label>
-                    <input
-                      value={groupName}
-                      onChange={(e) => setGroupName(e.target.value)}
-                      placeholder="Ex: Promoções da Suzzy"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Link de convite
-                    </label>
-                    <input
-                      value={inviteLink}
-                      onChange={(e) => setInviteLink(e.target.value)}
-                      placeholder="https://chat.whatsapp.com/..."
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
-                </div>
-              </CardSection>
-
-              <CardSection title="Mensagem padrão">
-                <div>
-                  <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                    Texto principal
-                  </label>
-                  <textarea
-                    value={defaultMessage}
-                    onChange={(e) => setDefaultMessage(e.target.value)}
-                    className="min-h-[170px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
-                </div>
-              </CardSection>
-
-              <CardSection title="CTA final / assinatura">
-                <div>
-                  <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                    Rodapé da mensagem
-                  </label>
-                  <textarea
-                    value={footerCta}
-                    onChange={(e) => setFooterCta(e.target.value)}
-                    className="min-h-[110px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
-                </div>
-              </CardSection>
-
-              <CardSection title="Opções da mensagem">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
-                    <span>Incluir link do grupo</span>
-                    <input
-                      type="checkbox"
-                      checked={includeInviteLink}
-                      onChange={() => setIncludeInviteLink(!includeInviteLink)}
-                    />
-                  </label>
-
-                  <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
-                    <span>Mensagem curta</span>
-                    <input
-                      type="checkbox"
-                      checked={shortenText}
-                      onChange={() => setShortenText(!shortenText)}
-                    />
-                  </label>
-                </div>
-              </CardSection>
+          {status === "error" && (
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+              <AlertCircle className="h-4 w-4" />
+              {errorMessage || "Erro ao processar a configuração."}
             </div>
+          )}
 
-            <div className="space-y-5">
-              <CardSection title="Preview da mensagem">
-                <div className="rounded-xl border border-slate-200 bg-[#e8f5e9] p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white">
-                      <MessageCircle className="h-4 w-4" />
-                    </div>
+          {loading ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+              <div className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando configurações...
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+              <div className="space-y-5">
+                <CardSection title="Grupo / Canal">
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-sm font-bold text-slate-800">
-                        {groupName || "Grupo WhatsApp"}
-                      </p>
-                      <p className="text-[12px] text-slate-500">Prévia do WhatsApp</p>
+                      <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                        Nome do grupo ou canal
+                      </label>
+                      <input
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        placeholder="Ex: Promoções da Suzzy"
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                        Link de convite
+                      </label>
+                      <input
+                        value={inviteLink}
+                        onChange={(e) => setInviteLink(e.target.value)}
+                        placeholder="https://chat.whatsapp.com/..."
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                      />
                     </div>
                   </div>
+                </CardSection>
 
-                  <div className="max-w-[420px] rounded-2xl rounded-tl-md bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
-                    <div className="whitespace-pre-line">{previewText}</div>
+                <CardSection title="Mensagem padrão">
+                  <div>
+                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                      Texto principal
+                    </label>
+                    <textarea
+                      value={defaultMessage}
+                      onChange={(e) => setDefaultMessage(e.target.value)}
+                      className="min-h-[170px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                    />
                   </div>
-                </div>
-              </CardSection>
+                </CardSection>
 
-              <CardSection title="Resumo da configuração">
-                <div className="space-y-3 text-[13px] text-slate-600">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Grupo:</strong>{" "}
-                    {groupName || "Não informado"}
+                <CardSection title="CTA final / assinatura">
+                  <div>
+                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
+                      Rodapé da mensagem
+                    </label>
+                    <textarea
+                      value={footerCta}
+                      onChange={(e) => setFooterCta(e.target.value)}
+                      className="min-h-[110px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                    />
                   </div>
+                </CardSection>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Convite:</strong>{" "}
-                    {inviteLink ? "Configurado" : "Não informado"}
-                  </div>
+                <CardSection title="Opções da mensagem">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                      <span>Incluir link do grupo</span>
+                      <input
+                        type="checkbox"
+                        checked={includeInviteLink}
+                        onChange={() => setIncludeInviteLink(!includeInviteLink)}
+                      />
+                    </label>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Link do grupo:</strong>{" "}
-                    {includeInviteLink ? "Incluído" : "Oculto"}
+                    <label className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-[13px] font-medium text-slate-700">
+                      <span>Mensagem curta</span>
+                      <input
+                        type="checkbox"
+                        checked={shortenText}
+                        onChange={() => setShortenText(!shortenText)}
+                      />
+                    </label>
                   </div>
+                </CardSection>
+              </div>
 
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <strong className="text-slate-700">Modo curto:</strong>{" "}
-                    {shortenText ? "Sim" : "Não"}
-                  </div>
-                </div>
-              </CardSection>
+              <div className="space-y-5">
+                <CardSection title="Preview da mensagem">
+                  <div className="rounded-xl border border-slate-200 bg-[#e8f5e9] p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-white">
+                        <MessageCircle className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">
+                          {groupName || "Grupo WhatsApp"}
+                        </p>
+                        <p className="text-[12px] text-slate-500">Prévia do WhatsApp</p>
+                      </div>
+                    </div>
 
-              <CardSection title="Dicas rápidas">
-                <div className="space-y-3 text-[13px] text-slate-600">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Use mensagens curtas com benefício claro e CTA forte.
+                    <div className="max-w-[420px] rounded-2xl rounded-tl-md bg-white p-4 text-sm leading-6 text-slate-700 shadow-sm">
+                      <div className="whitespace-pre-line">{previewText}</div>
+                    </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Evite textos muito longos para manter a taxa de clique alta.
+                </CardSection>
+
+                <CardSection title="Resumo da configuração">
+                  <div className="space-y-3 text-[13px] text-slate-600">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Grupo:</strong>{" "}
+                      {groupName || "Não informado"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Convite:</strong>{" "}
+                      {inviteLink ? "Configurado" : "Não informado"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Link do grupo:</strong>{" "}
+                      {includeInviteLink ? "Incluído" : "Oculto"}
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <strong className="text-slate-700">Modo curto:</strong>{" "}
+                      {shortenText ? "Sim" : "Não"}
+                    </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    Deixe o link do grupo sempre atualizado para facilitar entrada.
+                </CardSection>
+
+                <CardSection title="Dicas rápidas">
+                  <div className="space-y-3 text-[13px] text-slate-600">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Use mensagens curtas com benefício claro e CTA forte.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Evite textos muito longos para manter a taxa de clique alta.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Essa tela já salva por usuário no banco.
+                    </div>
                   </div>
-                </div>
-              </CardSection>
+                </CardSection>
+              </div>
             </div>
-          </div>
+          )}
         </main>
       </div>
     </div>
