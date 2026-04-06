@@ -1,30 +1,17 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
 import {
   Bell,
-  Bot,
-  Boxes,
   CircleAlert,
   Clock3,
   ExternalLink,
-  Home,
-  LayoutDashboard,
   Megaphone,
-  MessageCircle,
   Pencil,
   PlusCircle,
-  Send,
-  Settings,
-  ShoppingBag,
-  Star,
-  Tag,
+  Power,
   Trash2,
-  User,
-  Users,
-  WalletCards,
-  Zap,
 } from "lucide-react";
 
 type GroupItem = {
@@ -33,38 +20,38 @@ type GroupItem = {
   internalCode: string;
   postAuto: boolean;
   products: number;
-  intervalLabel: string;
+  intervalMinutes: number;
   randomMode: boolean;
+  lastPostedAt?: string | null;
+  isActive: boolean;
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+function formatDateTime(value?: string | null) {
+  if (!value) return "Nunca postado";
+
+  try {
+    return new Date(value).toLocaleString("pt-BR");
+  } catch {
+    return "Nunca postado";
+  }
+}
+
 function Sidebar() {
   const items = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/config-afiliados", label: "Config Afiliados", icon: WalletCards },
-    { href: "/config-telegram", label: "Config Telegram", icon: Send },
-    { href: "/config-whatsapp", label: "Config WhatsApp", icon: MessageCircle },
-    { href: "/canais-grupos", label: "Canais/Grupos", icon: Megaphone, active: true },
-    { href: "#", label: "Migração de Produtos", icon: ShoppingBag },
-    { href: "#", label: "Meus Dados", icon: User },
-    { href: "#", label: "Assinatura", icon: Star },
-    { href: "#", label: "Afiliados", icon: Tag },
-    { href: "#", label: "Vídeos", icon: Bot },
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/config-afiliados", label: "Config Afiliados" },
+    { href: "/config-telegram", label: "Config Telegram" },
+    { href: "/config-whatsapp", label: "Config WhatsApp" },
+    { href: "/canais-grupos", label: "Canais/Grupos", active: true },
   ];
 
   return (
-    <aside className="hidden min-h-screen w-[230px] shrink-0 border-r border-slate-200 bg-white lg:block">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-          S
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-slate-700">DivulgaLinks</p>
-        </div>
-      </div>
+    <aside className="hidden w-[230px] border-r bg-white lg:block">
+      <div className="p-5 font-bold text-slate-700">DivulgaLinks</div>
 
       <div className="px-4 pb-8">
         <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-400">
@@ -72,24 +59,20 @@ function Sidebar() {
         </div>
 
         <nav className="space-y-1">
-          {items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition",
-                  item.active
-                    ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          {items.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={cn(
+                "block rounded-lg px-3 py-2.5 text-[13px] font-medium",
+                item.active
+                  ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
+                  : "text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="mt-8 rounded-xl border border-blue-200 bg-white p-3 shadow-sm">
@@ -122,20 +105,9 @@ function Sidebar() {
 
 function Topbar() {
   return (
-    <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="h-11 flex-1 rounded-lg border border-slate-200 bg-slate-50" />
-      <div className="flex items-center gap-3">
-        <button className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-            2
-          </span>
-        </button>
-
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600 text-[12px] font-bold text-white">
-          S
-        </div>
-      </div>
+    <div className="mb-5 flex justify-between rounded-xl border bg-white p-3">
+      <div />
+      <Bell className="text-slate-500" />
     </div>
   );
 }
@@ -146,12 +118,11 @@ function StarterBanner() {
       <div className="flex flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">
         <p className="text-[13px] text-amber-900">
           <strong>⚠ Atenção:</strong> Você está utilizando o plano{" "}
-          <strong>STARTER (7 dias grátis)</strong>, que possui limitações, como marca
-          d&apos;água nos posts e suporte a afiliados reduzido.
+          <strong>STARTER (7 dias grátis)</strong>, que possui limitações.
         </p>
         <Link
           href="/upgrade"
-          className="inline-flex shrink-0 items-center rounded-lg bg-amber-400 px-4 py-2 text-[13px] font-bold text-slate-900 transition hover:bg-amber-300"
+          className="inline-flex shrink-0 items-center rounded-lg bg-amber-400 px-4 py-2 text-[13px] font-bold text-slate-900 hover:bg-amber-300"
         >
           Upgrade Agora 🚀
         </Link>
@@ -163,11 +134,14 @@ function StarterBanner() {
 function GroupCard({
   item,
   onDelete,
+  onChanged,
 }: {
   item: GroupItem;
   onDelete: (id: string) => void;
+  onChanged: () => void;
 }) {
   const [posting, setPosting] = useState(false);
+  const [toggling, setToggling] = useState(false);
 
   async function handlePostNow() {
     try {
@@ -185,6 +159,7 @@ function GroupCard({
       }
 
       alert("Post enviado com sucesso no Telegram.");
+      onChanged();
     } catch {
       alert("Erro ao postar no Telegram.");
     } finally {
@@ -192,8 +167,31 @@ function GroupCard({
     }
   }
 
+  async function handleToggleActive() {
+    try {
+      setToggling(true);
+
+      const res = await fetch(`/api/groups/${item.id}/toggle-active`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data?.error || "Erro ao alterar status.");
+        return;
+      }
+
+      onChanged();
+    } catch {
+      alert("Erro ao alterar status.");
+    } finally {
+      setToggling(false);
+    }
+  }
+
   return (
-    <div className="w-full max-w-[320px] rounded-xl border border-slate-300 bg-white p-4 shadow-sm">
+    <div className="w-full max-w-[340px] rounded-xl border border-slate-300 bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-start gap-3">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-blue-700 text-sm font-bold text-white">
           VS
@@ -221,8 +219,25 @@ function GroupCard({
         </div>
 
         <div className="flex items-center justify-between gap-3">
+          <span>Status:</span>
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[10px] font-bold",
+              item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"
+            )}
+          >
+            {item.isActive ? "LIGADO" : "PAUSADO"}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <span>Produtos:</span>
+          <span className="font-semibold text-slate-700">{item.products}</span>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
           <span>Intervalo:</span>
-          <span className="font-semibold text-slate-700">{item.intervalLabel}</span>
+          <span className="font-semibold text-slate-700">{item.intervalMinutes} min</span>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -236,15 +251,32 @@ function GroupCard({
             {item.randomMode ? "SIM" : "NÃO"}
           </span>
         </div>
+
+        <div className="rounded-lg bg-slate-50 p-2">
+          <div className="mb-1 flex items-center gap-1 font-semibold text-slate-700">
+            <Clock3 className="h-3.5 w-3.5" />
+            Última postagem
+          </div>
+          <div className="text-[11px] text-slate-600">{formatDateTime(item.lastPostedAt)}</div>
+        </div>
       </div>
 
-      <div className="mb-2">
+      <div className="mb-2 flex gap-2">
         <button
           onClick={handlePostNow}
           disabled={posting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-[12px] font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-[12px] font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
         >
           {posting ? "Postando..." : "Postar agora"}
+        </button>
+
+        <button
+          onClick={handleToggleActive}
+          disabled={toggling}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        >
+          <Power className="h-4 w-4" />
+          {toggling ? "Alterando..." : item.isActive ? "Pausar" : "Ativar"}
         </button>
       </div>
 
@@ -253,6 +285,7 @@ function GroupCard({
           href={`/canais-grupos/${item.id}`}
           className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-[12px] font-bold text-white hover:bg-blue-700"
         >
+          <Pencil className="h-4 w-4" />
           Editar
         </Link>
 
@@ -260,6 +293,7 @@ function GroupCard({
           onClick={() => onDelete(item.id)}
           className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-[12px] font-bold text-red-600 hover:bg-red-50"
         >
+          <Trash2 className="h-4 w-4" />
           Excluir
         </button>
       </div>
@@ -268,46 +302,60 @@ function GroupCard({
 }
 
 export default function CanaisGruposPage() {
-  const [groups, setGroups] = useState<GroupItem[]>([
-    {
-      id: "1",
-      name: "Viciados na Shoppee",
-      internalCode: "32980",
-      postAuto: true,
-      products: 200,
-      intervalLabel: "N/A",
-      randomMode: false,
-    },
-  ]);
+  const [groups, setGroups] = useState<GroupItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function loadGroups() {
+    try {
+      const res = await fetch("/api/groups", { cache: "no-store" });
+      const data = await res.json();
+      setGroups(Array.isArray(data) ? data : []);
+    } catch {
+      setGroups([]);
+    }
+  }
+
+  useEffect(() => {
+    loadGroups();
+  }, []);
 
   const limitReached = useMemo(() => groups.length >= 1, [groups.length]);
 
-  function handleAddGroup() {
+  async function handleAddGroup() {
     if (limitReached) {
       alert("Limite atingido: 1/1 no plano atual.");
       return;
     }
 
-    const nextId = String(Date.now());
+    try {
+      setLoading(true);
 
-    setGroups((prev) => [
-      ...prev,
-      {
-        id: nextId,
-        name: `Novo Grupo ${prev.length + 1}`,
-        internalCode: String(Math.floor(10000 + Math.random() * 90000)),
-        postAuto: false,
-        products: 0,
-        intervalLabel: "N/A",
-        randomMode: false,
-      },
-    ]);
+      await fetch("/api/groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: "Novo Grupo",
+        }),
+      });
+
+      await loadGroups();
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleDeleteGroup(id: string) {
+  async function handleDeleteGroup(id: string) {
     const ok = window.confirm("Deseja excluir este grupo?");
     if (!ok) return;
-    setGroups((prev) => prev.filter((item) => item.id !== id));
+
+    await fetch("/api/groups", {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+    });
+
+    await loadGroups();
   }
 
   return (
@@ -315,18 +363,18 @@ export default function CanaisGruposPage() {
       <div className="mx-auto flex max-w-[1600px]">
         <Sidebar />
 
-        <main className="min-w-0 flex-1 p-4 md:p-6">
+        <main className="flex-1 p-6">
           <Topbar />
           <StarterBanner />
 
           <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-700">
-                <Users className="h-4 w-4" />
+                <Megaphone className="h-4 w-4" />
                 Gerenciar Grupos de Configuração
               </div>
               <p className="mt-1 text-[12px] text-slate-500">
-                Configure seus grupos e organize suas publicações
+                Configure grupos, automação e postagem manual
               </p>
             </div>
 
@@ -336,7 +384,7 @@ export default function CanaisGruposPage() {
                 className="inline-flex min-w-[210px] items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-[13px] font-bold text-white hover:bg-blue-700"
               >
                 <PlusCircle className="h-4 w-4" />
-                Adicionar Grupo
+                {loading ? "Criando..." : "Adicionar Grupo"}
               </button>
               <span className="text-[11px] text-red-500">
                 Limite atingido: {groups.length}/1
@@ -346,7 +394,12 @@ export default function CanaisGruposPage() {
 
           <div className="mb-6 mt-6 flex flex-wrap gap-5">
             {groups.map((item) => (
-              <GroupCard key={item.id} item={item} onDelete={handleDeleteGroup} />
+              <GroupCard
+                key={item.id}
+                item={item}
+                onDelete={handleDeleteGroup}
+                onChanged={loadGroups}
+              />
             ))}
           </div>
 
