@@ -41,6 +41,24 @@ function diffMinutes(from: Date, to: Date) {
   return Math.floor((to.getTime() - from.getTime()) / 1000 / 60);
 }
 
+function pickLink<T extends { clicks: number }>(
+  links: T[],
+  selectionMode?: string,
+  randomMode?: boolean
+) {
+  if (!links.length) return null;
+
+  if (randomMode || selectionMode === "random") {
+    return links[Math.floor(Math.random() * links.length)];
+  }
+
+  if (selectionMode === "most_clicked") {
+    return [...links].sort((a, b) => b.clicks - a.clicks)[0];
+  }
+
+  return links[0];
+}
+
 export async function GET() {
   try {
     const now = new Date();
@@ -170,11 +188,17 @@ export async function GET() {
           continue;
         }
 
-        let selectedLink = links[0];
+        const selectedLink = pickLink(links, group.selectionMode, group.randomMode);
 
-        if (group.randomMode) {
-          const randomIndex = Math.floor(Math.random() * links.length);
-          selectedLink = links[randomIndex];
+        if (!selectedLink) {
+          results.push({
+            groupId: group.id,
+            groupName: group.name,
+            status: "error",
+            detail: "Nenhum link selecionado.",
+          });
+
+          continue;
         }
 
         const baseUrl =
