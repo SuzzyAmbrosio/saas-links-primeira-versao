@@ -22,9 +22,9 @@ type GroupItem = {
   products: number;
   intervalMinutes: number;
   randomMode: boolean;
+  selectionMode?: string;
   lastPostedAt?: string | null;
   isActive: boolean;
-  selectionMode?: string;
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -48,6 +48,8 @@ function Sidebar() {
     { href: "/config-telegram", label: "Config Telegram" },
     { href: "/config-whatsapp", label: "Config WhatsApp" },
     { href: "/canais-grupos", label: "Canais/Grupos", active: true },
+    { href: "/logs", label: "Logs" },
+    { href: "/metricas", label: "Métricas" },
   ];
 
   return (
@@ -76,22 +78,13 @@ function Sidebar() {
           ))}
         </nav>
 
-        <div className="flex items-center justify-between gap-3">
-          <span>Seleção:</span>
-          <span className="font-semibold text-slate-700">
-            {item.selectionMode === "most_clicked"
-              ? "Mais clicado"
-              : item.selectionMode === "random"
-              ? "Aleatório"
-              : "Mais recente"}
-          </span>
-        </div>
-        
         <div className="mt-8 rounded-xl border border-blue-200 bg-white p-3 shadow-sm">
           <div className="mb-1 inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-slate-900">
             R$ 50/mês
           </div>
-          <p className="text-[12px] font-semibold text-slate-700">Programa Influenciadores</p>
+          <p className="text-[12px] font-semibold text-slate-700">
+            Programa Influenciadores
+          </p>
         </div>
 
         <div className="mt-4 space-y-1">
@@ -210,7 +203,9 @@ function GroupCard({
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-bold text-slate-800">{item.name}</p>
+          <p className="truncate text-[15px] font-bold text-slate-800">
+            {item.name}
+          </p>
           <div className="mt-1 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">
             ID: {item.internalCode}
           </div>
@@ -223,7 +218,9 @@ function GroupCard({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-bold",
-              item.postAuto ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"
+              item.postAuto
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-slate-100 text-slate-500"
             )}
           >
             {item.postAuto ? "ATIVO" : "DESATIVADO"}
@@ -235,7 +232,9 @@ function GroupCard({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-bold",
-              item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"
+              item.isActive
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-red-100 text-red-600"
             )}
           >
             {item.isActive ? "LIGADO" : "PAUSADO"}
@@ -249,7 +248,20 @@ function GroupCard({
 
         <div className="flex items-center justify-between gap-3">
           <span>Intervalo:</span>
-          <span className="font-semibold text-slate-700">{item.intervalMinutes} min</span>
+          <span className="font-semibold text-slate-700">
+            {item.intervalMinutes} min
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <span>Seleção:</span>
+          <span className="font-semibold text-slate-700">
+            {item.selectionMode === "most_clicked"
+              ? "Mais clicado"
+              : item.selectionMode === "random"
+              ? "Aleatório"
+              : "Mais recente"}
+          </span>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -257,7 +269,9 @@ function GroupCard({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 text-[10px] font-bold",
-              item.randomMode ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-600"
+              item.randomMode
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-red-100 text-red-600"
             )}
           >
             {item.randomMode ? "SIM" : "NÃO"}
@@ -269,7 +283,9 @@ function GroupCard({
             <Clock3 className="h-3.5 w-3.5" />
             Última postagem
           </div>
-          <div className="text-[11px] text-slate-600">{formatDateTime(item.lastPostedAt)}</div>
+          <div className="text-[11px] text-slate-600">
+            {formatDateTime(item.lastPostedAt)}
+          </div>
         </div>
       </div>
 
@@ -416,7 +432,8 @@ export default function CanaisGruposPage() {
           </div>
 
           <div className="rounded-lg border border-sky-200 bg-sky-100 px-4 py-3 text-[13px] text-sky-800">
-            <span className="font-semibold">Precisa de ajuda?</span> Assista nosso tutorial em vídeo{" "}
+            <span className="font-semibold">Precisa de ajuda?</span> Assista
+            nosso tutorial em vídeo{" "}
             <Link href="#" className="font-bold underline">
               clicando aqui
             </Link>
