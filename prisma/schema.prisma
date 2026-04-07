@@ -46,6 +46,7 @@ model Group {
   postAuto          Boolean  @default(false)
   intervalMinutes   Int      @default(30)
   randomMode        Boolean  @default(false)
+  selectionMode     String   @default("recent")
 
   telegramToken     String   @default("")
   telegramChatId    String   @default("")
