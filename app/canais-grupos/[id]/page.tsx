@@ -13,7 +13,6 @@ import {
   Send,
   ShoppingBag,
   Trash2,
-  selectionMode,
 } from "lucide-react";
 
 const tabsList = [
@@ -43,6 +42,7 @@ type GroupData = {
   postAuto: boolean;
   intervalMinutes: number;
   randomMode: boolean;
+  selectionMode?: string;
   telegramToken: string;
   telegramChatId: string;
   whatsappMessage: string;
@@ -68,7 +68,10 @@ function Sidebar() {
       <div className="p-5 text-sm font-bold">DivulgaLinks</div>
 
       <nav className="space-y-2 px-3 text-sm">
-        <Link href="/dashboard" className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-50">
+        <Link
+          href="/dashboard"
+          className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-50"
+        >
           Dashboard
         </Link>
         <Link
@@ -95,6 +98,18 @@ function Sidebar() {
         >
           Config WhatsApp
         </Link>
+        <Link
+          href="/logs"
+          className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-50"
+        >
+          Logs
+        </Link>
+        <Link
+          href="/metricas"
+          className="block rounded px-3 py-2 text-slate-600 hover:bg-slate-50"
+        >
+          Métricas
+        </Link>
       </nav>
     </aside>
   );
@@ -117,6 +132,7 @@ export default function EditGroupPage() {
   const [postAuto, setPostAuto] = useState(false);
   const [intervalMinutes, setIntervalMinutes] = useState("30");
   const [randomMode, setRandomMode] = useState(false);
+  const [selectionMode, setSelectionMode] = useState("recent");
 
   const [telegramToken, setTelegramToken] = useState("");
   const [telegramChatId, setTelegramChatId] = useState("");
@@ -130,13 +146,10 @@ export default function EditGroupPage() {
   const [shopeeAffiliateId, setShopeeAffiliateId] = useState("");
   const [shopeeSubId, setShopeeSubId] = useState("");
 
-  const [selectionMode, setSelectionMode] = useState("recent");
-
   async function loadGroup() {
     try {
       setLoading(true);
       setErrorMessage("");
-      setSelectionMode(group.selectionMode ?? "recent");
 
       const res = await fetch(`/api/groups/${id}`, {
         cache: "no-store",
@@ -157,6 +170,7 @@ export default function EditGroupPage() {
       setPostAuto(Boolean(group.postAuto));
       setIntervalMinutes(String(group.intervalMinutes ?? 30));
       setRandomMode(Boolean(group.randomMode));
+      setSelectionMode(group.selectionMode ?? "recent");
 
       setTelegramToken(group.telegramToken ?? "");
       setTelegramChatId(group.telegramChatId ?? "");
@@ -197,6 +211,7 @@ export default function EditGroupPage() {
           postAuto,
           intervalMinutes: Number(intervalMinutes || 30),
           randomMode,
+          selectionMode,
 
           telegramToken,
           telegramChatId,
@@ -258,9 +273,18 @@ export default function EditGroupPage() {
     }
   }
 
-  const previewTitle = useMemo(() => postTitle || groupName || "Oferta imperdível", [postTitle, groupName]);
-  const previewPrice = useMemo(() => postPriceLabel || "R$ 99,90", [postPriceLabel]);
-  const previewCta = useMemo(() => postCta || "COMPRE AGORA", [postCta]);
+  const previewTitle = useMemo(
+    () => postTitle || groupName || "Oferta imperdível",
+    [postTitle, groupName]
+  );
+  const previewPrice = useMemo(
+    () => postPriceLabel || "R$ 99,90",
+    [postPriceLabel]
+  );
+  const previewCta = useMemo(
+    () => postCta || "COMPRE AGORA",
+    [postCta]
+  );
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
@@ -286,7 +310,11 @@ export default function EditGroupPage() {
                 disabled={deleting || loading}
                 className="flex items-center gap-2 rounded-lg border border-red-300 px-4 py-2 text-sm font-bold text-red-600 disabled:opacity-60"
               >
-                {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                {deleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
                 Excluir
               </button>
 
@@ -295,7 +323,11 @@ export default function EditGroupPage() {
                 disabled={saving || loading}
                 className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 Atualizar
               </button>
             </div>
@@ -321,7 +353,9 @@ export default function EditGroupPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`rounded-md px-3 py-1 text-sm font-semibold ${
-                  activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-100 text-slate-700"
+                  activeTab === tab
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-slate-700"
                 }`}
               >
                 {tab}
@@ -344,7 +378,9 @@ export default function EditGroupPage() {
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Nome do Grupo</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Nome do Grupo
+                      </label>
                       <input
                         value={groupName}
                         onChange={(e) => setGroupName(e.target.value)}
@@ -353,7 +389,9 @@ export default function EditGroupPage() {
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Código interno</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Código interno
+                      </label>
                       <input
                         value={internalCode}
                         disabled
@@ -381,7 +419,22 @@ export default function EditGroupPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between rounded-lg border p-3 md:col-span-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Regra de seleção do produto
+                      </label>
+                      <select
+                        value={selectionMode}
+                        onChange={(e) => setSelectionMode(e.target.value)}
+                        className="w-full rounded-lg border p-2.5"
+                      >
+                        <option value="recent">Mais recente</option>
+                        <option value="most_clicked">Mais clicado</option>
+                        <option value="random">Aleatório</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border p-3">
                       <span className="font-medium">Modo Aleatório</span>
                       <input
                         type="checkbox"
@@ -402,7 +455,9 @@ export default function EditGroupPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Token do Bot</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Token do Bot
+                      </label>
                       <input
                         value={telegramToken}
                         onChange={(e) => setTelegramToken(e.target.value)}
@@ -412,7 +467,9 @@ export default function EditGroupPage() {
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Chat ID</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Chat ID
+                      </label>
                       <input
                         value={telegramChatId}
                         onChange={(e) => setTelegramChatId(e.target.value)}
@@ -446,7 +503,9 @@ export default function EditGroupPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="mb-2 block text-sm font-semibold">Título</label>
+                        <label className="mb-2 block text-sm font-semibold">
+                          Título
+                        </label>
                         <input
                           value={postTitle}
                           onChange={(e) => setPostTitle(e.target.value)}
@@ -455,7 +514,9 @@ export default function EditGroupPage() {
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-semibold">Preço</label>
+                        <label className="mb-2 block text-sm font-semibold">
+                          Preço
+                        </label>
                         <input
                           value={postPriceLabel}
                           onChange={(e) => setPostPriceLabel(e.target.value)}
@@ -465,7 +526,9 @@ export default function EditGroupPage() {
                       </div>
 
                       <div>
-                        <label className="mb-2 block text-sm font-semibold">CTA</label>
+                        <label className="mb-2 block text-sm font-semibold">
+                          CTA
+                        </label>
                         <input
                           value={postCta}
                           onChange={(e) => setPostCta(e.target.value)}
@@ -485,7 +548,9 @@ export default function EditGroupPage() {
                     WhatsApp
                   </h2>
 
-                  <label className="mb-2 block text-sm font-semibold">Mensagem padrão</label>
+                  <label className="mb-2 block text-sm font-semibold">
+                    Mensagem padrão
+                  </label>
                   <textarea
                     value={whatsappMessage}
                     onChange={(e) => setWhatsappMessage(e.target.value)}
@@ -504,7 +569,9 @@ export default function EditGroupPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">Affiliate ID</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        Affiliate ID
+                      </label>
                       <input
                         value={shopeeAffiliateId}
                         onChange={(e) => setShopeeAffiliateId(e.target.value)}
@@ -513,7 +580,9 @@ export default function EditGroupPage() {
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-semibold">SubID</label>
+                      <label className="mb-2 block text-sm font-semibold">
+                        SubID
+                      </label>
                       <input
                         value={shopeeSubId}
                         onChange={(e) => setShopeeSubId(e.target.value)}
