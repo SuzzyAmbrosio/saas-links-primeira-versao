@@ -5,29 +5,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import {
-  BarChart3,
-  Bell,
-  Bot,
-  CircleDollarSign,
-  Copy,
-  ExternalLink,
-  Home,
-  LayoutDashboard,
-  Link2,
-  Loader2,
-  Megaphone,
-  MessageCircle,
-  Send,
-  Settings,
-  ShoppingBag,
-  Star,
-  Tag,
-  Trash2,
-  User,
-  WalletCards,
-  Zap,
-} from "lucide-react";
+import AdminShell from "@/components/dashboard/AdminShell";
 
 type LinkItem = {
   id: string;
@@ -38,197 +16,20 @@ type LinkItem = {
   createdAt: string;
 };
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
+type AffiliateCard = {
+  nome: string;
+  descricao: string;
+  status: string;
+};
 
-function Sidebar() {
-  const items = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, active: true },
-    { href: "/config-afiliados", label: "Config Afiliados", icon: WalletCards },
-    { href: "/config-telegram", label: "Config Telegram", icon: Send },
-    { href: "/config-whatsapp", label: "Config WhatsApp", icon: MessageCircle },
-    { href: "/canais-grupos", label: "Canais/Grupos", icon: Megaphone },
-    { href: "#", label: "Migração de Produtos", icon: ShoppingBag },
-    { href: "#", label: "Meus Dados", icon: User },
-    { href: "#", label: "Assinatura", icon: Star },
-    { href: "#", label: "Afiliados", icon: Tag },
-    { href: "#", label: "Vídeos", icon: Bot },
-    { href: "/metricas", label: "Métricas", icon: Activity },
-  ];
-
-  return (
-    <aside className="hidden min-h-screen w-[230px] shrink-0 border-r border-slate-200 bg-white lg:block">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-sm font-bold text-white">
-          S
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-slate-700">DivulgaLinks</p>
-        </div>
-      </div>
-
-      <div className="px-4 pb-8">
-        <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-          Menu
-        </div>
-
-        <nav className="space-y-1">
-          {items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition",
-                  item.active
-                    ? "border-l-4 border-blue-600 bg-blue-50 text-blue-700"
-                    : "text-slate-600 hover:bg-slate-50"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-8 rounded-xl border border-blue-200 bg-white p-3 shadow-sm">
-          <div className="mb-1 inline-flex rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-slate-900">
-            R$ 50/mês
-          </div>
-          <p className="text-[12px] font-semibold text-slate-700">Programa Influenciadores</p>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function Topbar({ email }: { email?: string | null }) {
-  return (
-    <div className="mb-5 flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="h-11 flex-1 rounded-lg border border-slate-200 bg-slate-50" />
-      <div className="flex items-center gap-3">
-        <button className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-            2
-          </span>
-        </button>
-
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-600 text-[12px] font-bold text-white">
-          {email?.[0]?.toUpperCase() || "S"}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StarterBanner({ planoAtual }: { planoAtual: string }) {
-  return (
-    <div className="mb-5 rounded-xl border border-amber-400 bg-amber-100 px-5 py-4">
-      <div className="flex flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">
-        <p className="text-[13px] text-amber-900">
-          <strong>⚠ Atenção:</strong> Você está utilizando o plano{" "}
-          <strong>{planoAtual === "PRO" ? "PRO" : "STARTER (7 dias grátis)"}</strong>, que possui
-          limitações, como marca d&apos;água nos posts e suporte a afiliados reduzido.
-        </p>
-        <Link
-          href="/upgrade"
-          className="inline-flex shrink-0 items-center rounded-lg bg-amber-400 px-4 py-2 text-[13px] font-bold text-slate-900 transition hover:bg-amber-300"
-        >
-          Upgrade Agora 🚀
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  help,
-}: {
-  title: string;
-  value: string | number;
-  icon: React.ComponentType<{ className?: string }>;
-  help?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">{title}</p>
-        <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
-          <Icon className="h-4 w-4" />
-        </div>
-      </div>
-      <div className="text-2xl font-bold text-slate-800">{value}</div>
-      {help ? <div className="mt-1 text-[12px] text-slate-500">{help}</div> : null}
-    </div>
-  );
-}
-
-function MiniTabs() {
-  const tabs = [
-    "Geral",
-    "Telegram",
-    "Layout Post",
-    "Recursos de IA",
-    "Site",
-    "Instagram",
-    "InstaSched",
-    "InstaBotHelp",
-    "WhatsApp - GRUPOS/CANAIS",
-    "AliExpress",
-    "Amazon",
-    "Magalu",
-    "Mercado Livre",
-    "Shein",
-    "Shopee",
-    "Awin",
-    "Produto Manual",
-  ];
-
-  return (
-    <div className="mb-5 rounded-xl border border-slate-200 bg-white p-4">
-      <div className="flex flex-wrap gap-2">
-        {tabs.map((tab, index) => (
-          <button
-            key={tab}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-[12px] font-semibold transition",
-              index === 0 ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function PanelCard({
-  title,
-  children,
-  extra,
-}: {
-  title: string;
-  children: React.ReactNode;
-  extra?: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-        <h3 className="text-[14px] font-bold text-slate-700">{title}</h3>
-        {extra}
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
+const affiliateCards: AffiliateCard[] = [
+  { nome: "Afiliado Shopee", descricao: "Link e integração para produtos da Shopee.", status: "Conectado" },
+  { nome: "Afiliado Amazon", descricao: "Importação e organização de ofertas da Amazon.", status: "Pendente" },
+  { nome: "Afiliado Mercado Livre", descricao: "Cadastre links e campanhas do Mercado Livre.", status: "Pendente" },
+  { nome: "Afiliado Magalu", descricao: "Área pronta para próxima etapa da integração.", status: "Pendente" },
+  { nome: "Afiliado AliExpress", descricao: "Busca, filtros e importação em massa.", status: "Pendente" },
+  { nome: "Afiliado AWIN", descricao: "Estrutura visual preparada para continuar.", status: "Pendente" },
+];
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -244,7 +45,7 @@ export default function DashboardPage() {
   const planoAtual = session?.user?.email === "admin@saaslinks.com" ? "PRO" : "FREE";
 
   const totalCliques = useMemo(
-    () => links.reduce((acc, item) => acc + Number(item.clicks || 0), 0),
+    () => links.reduce((acc, item) => acc + item.clicks, 0),
     [links]
   );
 
@@ -358,7 +159,7 @@ export default function DashboardPage() {
     setMessage("");
 
     try {
-      const mensagem = `🔥 ${link.title} com desconto HOJE!\n\n✅ Oferta imperdível\n🚚 Entrega rápida\n⭐ Produto bem avaliado\n\n🛒 Compre agora: ${window.location.origin}/${link.shortCode}`;
+      const mensagem = `🔥 ${link.title}\n\nOferta imperdível hoje.\n👉 ${window.location.origin}/${link.shortCode}`;
 
       const res = await fetch("/api/telegram/send", {
         method: "POST",
@@ -389,327 +190,358 @@ export default function DashboardPage() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-slate-600 shadow-sm">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Carregando painel...
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-lg font-semibold">
+        Carregando...
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
-            <Home className="h-7 w-7" />
-          </div>
-          <h1 className="mb-2 text-2xl font-bold text-slate-800">Você precisa fazer login</h1>
-          <p className="mb-6 text-sm text-slate-500">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
+        <div className="card w-full max-w-lg p-8 text-center">
+          <h1 className="text-2xl font-bold">Você precisa fazer login</h1>
+          <p className="mt-2 text-sm text-[var(--muted)]">
             Entre na sua conta para acessar o painel e gerenciar seus links.
           </p>
-          <Link
-            href="/login"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700"
-          >
-            Ir para login
-          </Link>
+          <div className="mt-6">
+            <Link href="/login" className="btn btn-primary">
+              Ir para login
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f6fa]">
-      <div className="mx-auto flex max-w-[1600px]">
-        <Sidebar />
+    <AdminShell
+      title="Editar: Viciados na Shoppee"
+      subtitle="Painel principal de campanhas, canais e automações"
+    >
+      <div className="mb-4 flex flex-wrap gap-2 rounded-xl border border-[var(--line)] bg-white p-4 text-sm">
+        <span className="badge badge-blue">Geral</span>
+        <span className="badge badge-green">Telegram</span>
+        <span className="badge badge-blue">Layout Post</span>
+        <span className="badge badge-yellow">Recursos de IA</span>
+        <span className="badge badge-blue">Site</span>
+        <span className="badge badge-red">WhatsApp - Grupos/Canais</span>
+        <span className="badge badge-blue">Instagram</span>
+        <span className="badge badge-blue">Shopee</span>
+        <span className="badge badge-blue">Amazon</span>
+        <span className="badge badge-blue">Mercado Livre</span>
+        <span className="badge badge-blue">Produto Manual</span>
+      </div>
 
-        <main className="min-w-0 flex-1 p-4 md:p-6">
-          <Topbar email={session.user?.email} />
+      {message ? (
+        <div className="mb-4 alert-info px-4 py-3 text-sm">{message}</div>
+      ) : null}
 
-          <StarterBanner planoAtual={planoAtual} />
+      <section className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="card p-4">
+          <div className="text-sm text-[var(--muted)]">Total de links</div>
+          <div className="mt-2 text-3xl font-bold">{links.length}</div>
+        </div>
 
-          <div className="mb-5 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-blue-700 text-sm font-bold text-white">
-                VS
-              </div>
-              <div>
-                <p className="text-[18px] font-bold text-slate-800">Viciados na Shoppee</p>
-                <p className="text-[12px] text-slate-500">
-                  Usuária: {session.user?.email} • Plano atual: {planoAtual}
-                </p>
-              </div>
+        <div className="card p-4">
+          <div className="text-sm text-[var(--muted)]">Cliques totais</div>
+          <div className="mt-2 text-3xl font-bold">{totalCliques}</div>
+        </div>
+
+        <div className="card p-4">
+          <div className="text-sm text-[var(--muted)]">Links disponíveis</div>
+          <div className="mt-2 text-3xl font-bold">
+            {planoAtual === "PRO" ? "∞" : Math.max(0, 5 - links.length)}
+          </div>
+        </div>
+
+        <div className="card p-4">
+          <div className="text-sm text-[var(--muted)]">Ganhos estimados</div>
+          <div className="mt-2 text-3xl font-bold">R$ {ganhosEstimados}</div>
+        </div>
+      </section>
+
+      <section className="mb-4 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
+        <div className="card p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold">Adicionar produto ou link</h2>
+              <p className="text-sm text-[var(--muted)]">
+                Continue a estrutura visual do painel sem trocar sua API atual.
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href="/upgrade"
-                className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-[13px] font-bold text-white hover:bg-blue-700"
+            <button
+              className="btn btn-primary"
+              onClick={importarProdutosShopee}
+              disabled={importando}
+            >
+              {importando ? "Importando..." : "Importar Shopee"}
+            </button>
+          </div>
+
+          <form onSubmit={criarLink} className="grid gap-3 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                Título
+              </label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Fone Bluetooth com desconto"
+                className="px-3 py-3"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                URL de destino
+              </label>
+              <input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://..."
+                className="px-3 py-3"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                Categoria
+              </label>
+              <select className="px-3 py-3" defaultValue="Shopee">
+                <option>Shopee</option>
+                <option>Amazon</option>
+                <option>Mercado Livre</option>
+                <option>Telegram</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                Tipo de postagem
+              </label>
+              <select className="px-3 py-3" defaultValue="Oferta">
+                <option>Oferta</option>
+                <option>Story</option>
+                <option>Grupo</option>
+                <option>Canal</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? "Criando..." : "Salvar link"}
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setTitle("");
+                  setUrl("");
+                }}
               >
-                Atualizar
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center rounded-lg bg-slate-100 px-4 py-2 text-[13px] font-bold text-slate-700 hover:bg-slate-200"
-              >
-                Ver site
-              </Link>
+                Limpar
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div className="card p-4">
+          <h2 className="text-base font-bold">Top links</h2>
+          <p className="mb-4 text-sm text-[var(--muted)]">
+            Os links com melhor desempenho até agora.
+          </p>
+
+          {topLinks.length === 0 ? (
+            <div className="card-soft p-4 text-sm text-[var(--muted)]">
+              Nenhum dado ainda.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topLinks.map((link, index) => (
+                <div
+                  key={link.id}
+                  className="flex items-center justify-between rounded-xl border border-[var(--line)] p-3"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-[var(--muted)]">
+                      #{index + 1}
+                    </div>
+                    <div className="line-clamp-2 text-sm font-semibold">
+                      {link.title}
+                    </div>
+                    <div className="text-xs text-[var(--muted)]">
+                      /{link.shortCode}
+                    </div>
+                  </div>
+                  <div className="badge badge-blue">{link.clicks} cliques</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="mb-4">
+        <div className="card p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold">Configuração de afiliados</h2>
+              <p className="text-sm text-[var(--muted)]">
+                Blocos prontos para você continuar as próximas telas do clone.
+              </p>
             </div>
           </div>
 
-          <MiniTabs />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {affiliateCards.map((card) => (
+              <div key={card.nome} className="rounded-xl border border-[var(--line)] p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold">{card.nome}</h3>
+                    <p className="mt-1 text-sm text-[var(--muted)]">{card.descricao}</p>
+                  </div>
+                  <span
+                    className={`badge ${
+                      card.status === "Conectado" ? "badge-green" : "badge-yellow"
+                    }`}
+                  >
+                    {card.status}
+                  </span>
+                </div>
 
-          {message ? (
-            <div className="mb-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
-              {message}
-            </div>
-          ) : null}
+                <div className="mt-4 space-y-2">
+                  <input className="px-3 py-2" placeholder="Digite sua chave / ID" />
+                  <input className="px-3 py-2" placeholder="Link de afiliado" />
+                </div>
 
-          <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              title="Total de links"
-              value={links.length}
-              icon={Link2}
-              help="Links ativos no painel"
-            />
-            <StatCard
-              title="Cliques totais"
-              value={totalCliques}
-              icon={BarChart3}
-              help="Soma de todos os acessos"
-            />
-            <StatCard
-              title="Links disponíveis"
-              value={planoAtual === "PRO" ? "∞" : Math.max(0, 5 - links.length)}
-              icon={Zap}
-              help={planoAtual === "PRO" ? "Plano ilimitado" : "Limite do plano gratuito"}
-            />
-            <StatCard
-              title="Ganhos estimados"
-              value={`R$ ${ganhosEstimados}`}
-              icon={CircleDollarSign}
-              help="Estimativa simples por clique"
-            />
+                <div className="mt-4 flex gap-2">
+                  <button className="btn btn-primary">Salvar</button>
+                  <button className="btn btn-secondary">Divulgar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
+        <div className="card overflow-hidden">
+          <div className="border-b border-[var(--line)] px-4 py-3">
+            <h2 className="text-base font-bold">Meus links</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="space-y-5">
-              <PanelCard title="Adicionar produto / criar link">
-                <form onSubmit={criarLink} className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="md:col-span-1">
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      Título
-                    </label>
-                    <input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Ex: Oferta Air Fryer"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
+          {links.length === 0 ? (
+            <div className="p-4 text-sm text-[var(--muted)]">
+              Nenhum link criado ainda.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="table-clean">
+                <thead>
+                  <tr>
+                    <th>Título</th>
+                    <th>Short link</th>
+                    <th>Cliques</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {links.map((link) => {
+                    const linkCompleto =
+                      typeof window !== "undefined"
+                        ? `${window.location.origin}/${link.shortCode}`
+                        : `/${link.shortCode}`;
 
-                  <div className="md:col-span-1">
-                    <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-                      URL de destino
-                    </label>
-                    <input
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://..."
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 flex flex-wrap gap-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-70"
-                    >
-                      {loading ? "Criando..." : "Criar link"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={importarProdutosShopee}
-                      disabled={importando}
-                      className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-70"
-                    >
-                      {importando ? "Importando..." : "Importar produtos da Shopee"}
-                    </button>
-                  </div>
-                </form>
-              </PanelCard>
-
-              <PanelCard title="Meus links">
-                {links.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                    Nenhum link criado ainda.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {links.map((link) => {
-                      const linkCompleto =
-                        typeof window !== "undefined"
-                          ? `${window.location.origin}/${link.shortCode}`
-                          : `/${link.shortCode}`;
-
-                      return (
-                        <div
-                          key={link.id}
-                          className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-                        >
-                          <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                            <div className="min-w-0">
-                              <h4 className="truncate text-[15px] font-bold text-slate-800">
-                                {link.title}
-                              </h4>
-                              <p className="mt-1 line-clamp-1 text-[12px] text-slate-500">
-                                Destino: {link.url}
-                              </p>
-                              <Link
-                                href={linkCompleto}
-                                target="_blank"
-                                className="mt-1 inline-flex items-center gap-1 text-[12px] font-semibold text-blue-600 hover:underline"
-                              >
-                                {linkCompleto}
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </Link>
-                            </div>
-
-                            <div className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-700">
-                              Cliques: {link.clicks}
-                            </div>
+                    return (
+                      <tr key={link.id}>
+                        <td>
+                          <div className="font-semibold">{link.title}</div>
+                          <div className="mt-1 text-xs text-[var(--muted)] line-clamp-2">
+                            {link.url}
                           </div>
-
+                        </td>
+                        <td>
+                          <a
+                            href={linkCompleto}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[var(--primary)]"
+                          >
+                            {link.shortCode}
+                          </a>
+                        </td>
+                        <td>{link.clicks}</td>
+                        <td>
                           <div className="flex flex-wrap gap-2">
                             <button
+                              className="btn btn-secondary"
                               onClick={() => copiarLink(link.shortCode)}
-                              className="inline-flex items-center gap-2 rounded-lg bg-slate-200 px-3 py-2 text-[12px] font-bold text-slate-700 hover:bg-slate-300"
                             >
-                              <Copy className="h-4 w-4" />
                               Copiar
                             </button>
 
                             <button
+                              className="btn btn-primary"
                               onClick={() => enviarTelegram(link)}
                               disabled={enviandoId === link.id}
-                              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-[12px] font-bold text-white hover:bg-blue-700 disabled:opacity-70"
                             >
-                              {enviandoId === link.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Send className="h-4 w-4" />
-                              )}
                               {enviandoId === link.id ? "Enviando..." : "Telegram"}
                             </button>
 
                             <button
+                              className="btn btn-danger"
                               onClick={() => excluirLink(link.id)}
-                              className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-[12px] font-bold text-white hover:bg-red-600"
                             >
-                              <Trash2 className="h-4 w-4" />
                               Excluir
                             </button>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </PanelCard>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
+          )}
+        </div>
 
-            <div className="space-y-5">
-              <PanelCard title="Top links">
-                {topLinks.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                    Nenhum dado ainda.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {topLinks.map((link, index) => (
-                      <div
-                        key={link.id}
-                        className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-3"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white">
-                              {index + 1}
-                            </div>
-                            <p className="truncate text-sm font-semibold text-slate-800">
-                              {link.title}
-                            </p>
-                          </div>
-                          <p className="mt-1 text-[12px] text-slate-500">/{link.shortCode}</p>
-                        </div>
-                        <div className="text-sm font-bold text-slate-700">{link.clicks} cliques</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </PanelCard>
-
-              <PanelCard title="Resumo rápido">
-                <div className="space-y-3 text-sm text-slate-600">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-semibold text-slate-700">Envio para Telegram</p>
-                    <p className="mt-1 text-[13px]">
-                      Use o botão <strong>Telegram</strong> em cada link para publicar a oferta.
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-semibold text-slate-700">Importação Shopee</p>
-                    <p className="mt-1 text-[13px]">
-                      O botão de importação reaproveita sua rota atual de produtos.
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-semibold text-slate-700">Configurações futuras</p>
-                    <p className="mt-1 text-[13px]">
-                      Depois ligamos esse layout nas páginas de afiliados, Telegram, WhatsApp e grupos.
-                    </p>
-                  </div>
-                </div>
-              </PanelCard>
-
-              <PanelCard title="Atalhos">
-                <div className="grid grid-cols-2 gap-3">
-                  <Link
-                    href="/config-afiliados"
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Config Afiliados
-                  </Link>
-                  <Link
-                    href="/config-telegram"
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Config Telegram
-                  </Link>
-                  <Link
-                    href="/config-whatsapp"
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Config WhatsApp
-                  </Link>
-                  <Link
-                    href="/canais-grupos"
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                  >
-                    Canais/Grupos
-                  </Link>
-                </div>
-              </PanelCard>
+        <div className="space-y-4">
+          <div className="alert-success p-4">
+            <div className="font-bold">Conta conectada</div>
+            <div className="mt-1 text-sm">
+              Usuária: <strong>{session.user?.email}</strong>
+            </div>
+            <div className="mt-1 text-sm">
+              Plano atual: <strong>{planoAtual}</strong>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+
+          <div className="card p-4">
+            <h2 className="text-base font-bold">Telegram</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              Esse bloco já conversa com sua rota atual de envio.
+            </p>
+
+            <div className="mt-4 rounded-xl border border-[var(--line)] p-4">
+              <div className="text-sm font-semibold">Bot pronto para automação</div>
+              <div className="mt-1 text-xs text-[var(--muted)]">
+                Use o botão “Telegram” nos links para disparar ofertas.
+              </div>
+            </div>
+          </div>
+
+          <div className="card p-4">
+            <h2 className="text-base font-bold">Próximo bloco</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              A próxima continuidade ideal é criar a tela interna de “Canais/Grupos”
+              com abas tipo Telegram, WhatsApp, Shopee, Amazon e Mercado Livre.
+            </p>
+          </div>
+        </div>
+      </section>
+    </AdminShell>
   );
 }
