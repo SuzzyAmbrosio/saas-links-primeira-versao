@@ -47,6 +47,7 @@ export async function GET() {
         products: group.links.length,
         intervalMinutes: group.intervalMinutes,
         randomMode: group.randomMode,
+        selectionMode: group.selectionMode,
         lastPostedAt: group.lastPostedAt,
         isActive: group.isActive,
       }))
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
         postAuto: false,
         intervalMinutes: 30,
         randomMode: false,
+        selectionMode: "recent",
         whatsappMessage: "",
         telegramToken: "",
         telegramChatId: "",
