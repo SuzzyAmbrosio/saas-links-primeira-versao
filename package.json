@@ -1,7 +1,7 @@
 {
   "name": "disparalink",
   "version": "1.0.0", 
-  "description": "DisparaLink - Todos seus links em um só lugar",
+  "description": "Dispara Link - Todos seus links em um só lugar",
   "private": true,
   "scripts": {
     "dev": "next dev",
