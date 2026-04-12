@@ -2,8 +2,8 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata = {
-  title: 'DisparaLink - Seu hub de links',
-  description: 'Crie sua página de links personalizada com DisparaLink',
+  title: 'Dispara Link - Seu hub de links',
+  description: 'Crie sua página de links personalizada com Dispara Link',
   icons: {
     icon: '/logo.png',
   },
