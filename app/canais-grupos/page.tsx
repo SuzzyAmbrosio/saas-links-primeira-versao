@@ -54,7 +54,7 @@ function Sidebar() {
 
   return (
     <aside className="hidden w-[230px] border-r bg-white lg:block">
-      <div className="p-5 font-bold text-slate-700">DivulgaLinks</div>
+      <div className="p-5 font-bold text-slate-700">PostaLinksAuto</div>
 
       <div className="px-4 pb-8">
         <div className="mb-3 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-400">
@@ -117,13 +117,13 @@ function Topbar() {
   );
 }
 
-function StarterBanner() {
+function InicianteBanner() {
   return (
     <div className="mb-5 rounded-xl border border-amber-400 bg-amber-100 px-5 py-4">
       <div className="flex flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">
         <p className="text-[13px] text-amber-900">
           <strong>⚠ Atenção:</strong> Você está utilizando o plano{" "}
-          <strong>STARTER (7 dias grátis)</strong>, que possui limitações.
+          <strong>INICIANTE (7 dias grátis)</strong>, que possui limitações.
         </p>
         <Link
           href="/upgrade"
@@ -393,7 +393,7 @@ export default function CanaisGruposPage() {
 
         <main className="flex-1 p-6">
           <Topbar />
-          <StarterBanner />
+          <InicianteBanner />
 
           <div className="mb-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>

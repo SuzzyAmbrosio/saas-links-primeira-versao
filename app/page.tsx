@@ -6,7 +6,7 @@ export default function HomePage() {
       <section className="container-app px-4 py-6 md:px-6 md:py-10">
         <header className="card mb-6 flex items-center justify-between px-5 py-4">
           <div>
-            <div className="text-lg font-bold">DivulgaLinks</div>
+            <div className="text-lg font-bold">PostaLinksAuto</div>
             <div className="text-sm text-[var(--muted)]">
               Links, automação e tráfego em um só painel
             </div>

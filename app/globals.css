@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* resto do seu css vem depois */
 
 :root {
   --bg: #f4f6fb;

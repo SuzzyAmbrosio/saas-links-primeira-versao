@@ -64,7 +64,7 @@ export default function AdminShell({
                 S
               </div>
               <div>
-                <div className="text-sm font-bold text-[var(--text)]">DivulgaLinks</div>
+                <div className="text-sm font-bold text-[var(--text)]">PostaLinksAuto</div>
               </div>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function AdminShell({
 
             <div className="mb-4 alert-warning px-4 py-4 text-center text-sm">
               <div className="font-semibold">
-                ⚠ Atenção: Você está utilizando o plano <strong>STARTER (7 dias grátis)</strong>, que possui limitações.
+                ⚠ Atenção: Você está utilizando o plano <strong>INICIANTE (7 dias grátis)</strong>, que possui limitações.
               </div>
               <div className="mt-1 text-xs">
                 Para desbloquear todos os recursos, considere fazer um upgrade para um plano premium.

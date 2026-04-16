@@ -41,7 +41,7 @@ function Sidebar() {
           S
         </div>
         <div>
-          <p className="text-[13px] font-bold text-slate-700">DivulgaLinks</p>
+          <p className="text-[13px] font-bold text-slate-700">PostaLinksAuto</p>
         </div>
       </div>
 

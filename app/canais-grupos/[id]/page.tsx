@@ -19,20 +19,15 @@ const tabsList = [
   "Geral",
   "Telegram",
   "Layout Post",
-  "Recursos de IA",
-  "Site",
   "Instagram",
   "InstaSched",
   "InstaBotHelp",
-  "WhatsApp - GRUPOS/CANAIS",
+  "WhatsApp - Grupos/Canais",
   "AliExpress",
   "Amazon",
-  "Magalu",
   "Mercado Livre",
   "Shein",
   "Shopee",
-  "Awin",
-  "Produto Manual",
 ];
 
 type GroupData = {
@@ -65,7 +60,7 @@ function Topbar() {
 function Sidebar() {
   return (
     <aside className="hidden w-[230px] border-r bg-white lg:block">
-      <div className="p-5 text-sm font-bold">DivulgaLinks</div>
+      <div className="p-5 text-sm font-bold">PostaLinksAuto</div>
 
       <nav className="space-y-2 px-3 text-sm">
         <Link
@@ -541,7 +536,7 @@ export default function EditGroupPage() {
                 </div>
               )}
 
-              {activeTab === "WhatsApp - GRUPOS/CANAIS" && (
+              {activeTab === "WhatsApp - Grupos/Canais" && (
                 <div className="rounded-xl border bg-white p-5">
                   <h2 className="mb-4 flex items-center gap-2 font-bold">
                     <MessageCircle className="h-4 w-4" />
@@ -597,7 +592,7 @@ export default function EditGroupPage() {
                 "Geral",
                 "Telegram",
                 "Layout Post",
-                "WhatsApp - GRUPOS/CANAIS",
+                "WhatsApp - Grupos/Canais",
                 "Shopee",
               ].includes(activeTab) && (
                 <div className="rounded-xl border bg-white p-6 text-center text-gray-500">

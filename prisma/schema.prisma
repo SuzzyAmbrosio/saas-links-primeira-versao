@@ -4,111 +4,150 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
-  id        String        @id @default(cuid())
-  name      String?
-  email     String        @unique
-  password  String?
-  plan      String        @default("FREE")
+  id String @id @default(cuid())
+  name String?
+  email String? @unique
+  emailVerified DateTime?
+  image String?
+  password String?
+  plan String @default("FREE")
 
-  links     Link[]
-  groups    Group[]
-  settings  UserSettings?
-  postLogs  PostLog[]
+  accounts Account[]
+  sessions Session[]
+  links Link[]
+  groups Group[]
+  settings UserSettings?
+  postLogs PostLog[]
 
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Account {
+  id String @id @default(cuid())
+  userId String
+  type String
+  provider String
+  providerAccountId String
+  refresh_token String? @db.Text
+  access_token String? @db.Text
+  expires_at Int?
+  token_type String?
+  scope String?
+  id_token String? @db.Text
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id String @id @default(cuid())
+  sessionToken String @unique
+  userId String
+  expires DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token String @unique
+  expires DateTime
+
+  @@unique([identifier, token])
 }
 
 model Link {
-  id        String   @id @default(cuid())
-  title     String
-  url       String
-  shortCode String   @unique
-  clicks    Int      @default(0)
+  id String @id @default(cuid())
+  title String
+  url String
+  shortCode String @unique
+  clicks Int @default(0)
 
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  groupId   String?
-  group     Group?   @relation(fields: [groupId], references: [id])
+  groupId String?
+  group Group? @relation(fields: [groupId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Group {
-  id                String   @id @default(cuid())
-  name              String
-  internalCode      String
-  postAuto          Boolean  @default(false)
-  intervalMinutes   Int      @default(30)
-  randomMode        Boolean  @default(false)
-  selectionMode     String   @default("recent")
+  id String @id @default(cuid())
+  name String
+  internalCode String
+  postAuto Boolean @default(false)
+  intervalMinutes Int @default(30)
+  randomMode Boolean @default(false)
+  selectionMode String @default("recent")
 
-  telegramToken     String   @default("")
-  telegramChatId    String   @default("")
+  telegramToken String @default("")
+  telegramChatId String @default("")
 
-  whatsappMessage   String   @default("")
+  whatsappMessage String @default("")
 
-  shopeeAffiliateId String   @default("")
-  shopeeSubId       String   @default("")
+  shopeeAffiliateId String @default("")
+  shopeeSubId String @default("")
 
-  postTitle         String   @default("")
-  postPriceLabel    String   @default("")
-  postCta           String   @default("")
+  postTitle String @default("")
+  postPriceLabel String @default("")
+  postCta String @default("")
 
-  lastPostedAt      DateTime?
-  isActive          Boolean  @default(true)
+  lastPostedAt DateTime?
+  isActive Boolean @default(true)
 
-  userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  links             Link[]
+  links Link[]
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model UserSettings {
-  id                        String   @id @default(cuid())
-  userId                    String   @unique
-  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+  userId String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  telegramBotToken          String   @default("")
-  telegramChatId            String   @default("")
-  telegramDefaultMessage    String   @default("")
-  telegramSignature         String   @default("")
-  telegramParseMode         String   @default("HTML")
-  telegramDisablePreview    Boolean  @default(false)
-  telegramPinAfterSend      Boolean  @default(false)
+  telegramBotToken String @default("")
+  telegramChatId String @default("")
+  telegramDefaultMessage String @default("")
+  telegramSignature String @default("")
+  telegramParseMode String @default("HTML")
+  telegramDisablePreview Boolean @default(false)
+  telegramPinAfterSend Boolean @default(false)
 
-  whatsappGroupName         String   @default("")
-  whatsappInviteLink        String   @default("")
-  whatsappDefaultMessage    String   @default("")
-  whatsappFooterCta         String   @default("")
-  whatsappIncludeInviteLink Boolean  @default(true)
-  whatsappShortenText       Boolean  @default(false)
+  whatsappGroupName String @default("")
+  whatsappInviteLink String @default("")
+  whatsappDefaultMessage String @default("")
+  whatsappFooterCta String @default("")
+  whatsappIncludeInviteLink Boolean @default(true)
+  whatsappShortenText Boolean @default(false)
 
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model PostLog {
-  id          String   @id @default(cuid())
-  status      String
-  detail      String   @default("")
+  id String @id @default(cuid())
+  status String
+  detail String @default("")
 
-  groupId      String?
-  groupName    String?
-  linkId       String?
-  linkTitle    String?
+  groupId String?
+  groupName String?
+  linkId String?
+  linkTitle String?
 
-  telegramChatId String? 
-  postedAt     DateTime @default(now())
+  telegramChatId String?
+  postedAt DateTime @default(now())
 
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

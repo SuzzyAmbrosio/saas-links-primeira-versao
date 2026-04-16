@@ -49,7 +49,7 @@ export default function Sidebar() {
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 font-black text-white">
           S
         </div>
-        <div className="text-[13px] font-bold text-slate-700">DivulgaLinks</div>
+        <div className="text-[13px] font-bold text-slate-700">PostaLinksAuto</div>
       </div>
 
       {menu.map((section, index) => (

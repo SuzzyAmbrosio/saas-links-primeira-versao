@@ -2,10 +2,9 @@
 
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import AdminShell from "@/components/dashboard/AdminShell";
+import Link from "next/link";
 
 type LinkItem = {
   id: string;
@@ -42,7 +41,7 @@ export default function DashboardPage() {
   const [enviandoId, setEnviandoId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  const planoAtual = session?.user?.email === "admin@saaslinks.com" ? "PRO" : "FREE";
+  const planoAtual = session?.user?.email === "admin@saaslinks.com"? "PRO" : "FREE";
 
   const totalCliques = useMemo(
     () => links.reduce((acc, item) => acc + item.clicks, 0),
@@ -62,7 +61,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch("/api/links/list", { cache: "no-store" });
       const data = await res.json();
-      setLinks(Array.isArray(data) ? data : []);
+      setLinks(Array.isArray(data)? data : []);
     } catch {
       setMessage("Erro ao carregar links.");
     }
@@ -190,7 +189,7 @@ export default function DashboardPage() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-lg font-semibold">
+      <div className="flex min-h-screen items-center justify-center text-lg font-semibold">
         Carregando...
       </div>
     );
@@ -198,14 +197,14 @@ export default function DashboardPage() {
 
   if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4">
-        <div className="card w-full max-w-lg p-8 text-center">
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="w-full max-w-lg rounded-xl border border-gray-200 bg-white p-8 text-center">
           <h1 className="text-2xl font-bold">Você precisa fazer login</h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">
+          <p className="mt-2 text-sm text-gray-600">
             Entre na sua conta para acessar o painel e gerenciar seus links.
           </p>
           <div className="mt-6">
-            <Link href="/login" className="btn btn-primary">
+            <Link href="/login" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
               Ir para login
             </Link>
           </div>
@@ -215,101 +214,107 @@ export default function DashboardPage() {
   }
 
   return (
-    <AdminShell
-      title="Editar: Viciados na Shoppee"
-      subtitle="Painel principal de campanhas, canais e automações"
-    >
-      <div className="mb-4 flex flex-wrap gap-2 rounded-xl border border-[var(--line)] bg-white p-4 text-sm">
-        <span className="badge badge-blue">Geral</span>
-        <span className="badge badge-green">Telegram</span>
-        <span className="badge badge-blue">Layout Post</span>
-        <span className="badge badge-yellow">Recursos de IA</span>
-        <span className="badge badge-blue">Site</span>
-        <span className="badge badge-red">WhatsApp - Grupos/Canais</span>
-        <span className="badge badge-blue">Instagram</span>
-        <span className="badge badge-blue">Shopee</span>
-        <span className="badge badge-blue">Amazon</span>
-        <span className="badge badge-blue">Mercado Livre</span>
-        <span className="badge badge-blue">Produto Manual</span>
-      </div>
-
-      {message ? (
-        <div className="mb-4 alert-info px-4 py-3 text-sm">{message}</div>
+    <>
+      {message? (
+        <div className="mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">{message}</div>
       ) : null}
 
+      <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Dashboard Posta Links Auto</h1>
+            <p className="text-sm text-gray-600">Painel principal de campanhas, canais e automações</p>
+          </div>
+          <button className="rounded-lg border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50">
+            Atualizar
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 text-sm">
+          <span className="rounded-full bg-gray-100 px-3 py-1">Geral</span>
+          <span className="rounded-full bg-green-100 px-3 py-1 text-green-700">Telegram</span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">Layout Post</span>
+          <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">WhatsApp - Grupos/Canais</span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">Instagram</span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">Shopee</span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">Amazon</span>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">Mercado Livre</span>
+        </div>
+      </div>
+
       <section className="mb-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="card p-4">
-          <div className="text-sm text-[var(--muted)]">Total de links</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="text-sm text-gray-600">Total de links</div>
           <div className="mt-2 text-3xl font-bold">{links.length}</div>
         </div>
 
-        <div className="card p-4">
-          <div className="text-sm text-[var(--muted)]">Cliques totais</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="text-sm text-gray-600">Cliques totais</div>
           <div className="mt-2 text-3xl font-bold">{totalCliques}</div>
         </div>
 
-        <div className="card p-4">
-          <div className="text-sm text-[var(--muted)]">Links disponíveis</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="text-sm text-gray-600">Links disponíveis</div>
           <div className="mt-2 text-3xl font-bold">
-            {planoAtual === "PRO" ? "∞" : Math.max(0, 5 - links.length)}
+            {planoAtual === "PRO"? "∞" : Math.max(0, 5 - links.length)}
           </div>
         </div>
 
-        <div className="card p-4">
-          <div className="text-sm text-[var(--muted)]">Ganhos estimados</div>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="text-sm text-gray-600">Ganhos estimados</div>
           <div className="mt-2 text-3xl font-bold">R$ {ganhosEstimados}</div>
         </div>
       </section>
 
       <section className="mb-4 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-        <div className="card p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold">Adicionar produto ou link</h2>
-              <p className="text-sm text-[var(--muted)]">
+              <p className="text-sm text-gray-600">
                 Continue a estrutura visual do painel sem trocar sua API atual.
               </p>
             </div>
 
             <button
-              className="btn btn-primary"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               onClick={importarProdutosShopee}
               disabled={importando}
             >
-              {importando ? "Importando..." : "Importar Shopee"}
+              {importando? "Importando..." : "Importar Shopee"}
             </button>
           </div>
 
           <form onSubmit={criarLink} className="grid gap-3 md:grid-cols-2">
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
                 Título
               </label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ex: Fone Bluetooth com desconto"
-                className="px-3 py-3"
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
                 URL de destino
               </label>
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://..."
-                className="px-3 py-3"
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:border-blue-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
                 Categoria
               </label>
-              <select className="px-3 py-3" defaultValue="Shopee">
+              <select className="w-full rounded-lg border border-gray-300 px-3 py-3" defaultValue="Shopee">
                 <option>Shopee</option>
                 <option>Amazon</option>
                 <option>Mercado Livre</option>
@@ -318,10 +323,10 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-gray-600">
                 Tipo de postagem
               </label>
-              <select className="px-3 py-3" defaultValue="Oferta">
+              <select className="w-full rounded-lg border border-gray-300 px-3 py-3" defaultValue="Oferta">
                 <option>Oferta</option>
                 <option>Story</option>
                 <option>Grupo</option>
@@ -330,13 +335,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="md:col-span-2 flex flex-wrap gap-3 pt-2">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? "Criando..." : "Salvar link"}
+              <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" disabled={loading}>
+                {loading? "Criando..." : "Salvar link"}
               </button>
 
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 onClick={() => {
                   setTitle("");
                   setUrl("");
@@ -348,14 +353,14 @@ export default function DashboardPage() {
           </form>
         </div>
 
-        <div className="card p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <h2 className="text-base font-bold">Top links</h2>
-          <p className="mb-4 text-sm text-[var(--muted)]">
+          <p className="mb-4 text-sm text-gray-600">
             Os links com melhor desempenho até agora.
           </p>
 
-          {topLinks.length === 0 ? (
-            <div className="card-soft p-4 text-sm text-[var(--muted)]">
+          {topLinks.length === 0? (
+            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
               Nenhum dado ainda.
             </div>
           ) : (
@@ -363,20 +368,22 @@ export default function DashboardPage() {
               {topLinks.map((link, index) => (
                 <div
                   key={link.id}
-                  className="flex items-center justify-between rounded-xl border border-[var(--line)] p-3"
+                  className="flex items-center justify-between rounded-xl border border-gray-200 p-3"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-[var(--muted)]">
+                    <div className="text-xs font-bold text-gray-600">
                       #{index + 1}
                     </div>
                     <div className="line-clamp-2 text-sm font-semibold">
                       {link.title}
                     </div>
-                    <div className="text-xs text-[var(--muted)]">
+                    <div className="text-xs text-gray-600">
                       /{link.shortCode}
                     </div>
                   </div>
-                  <div className="badge badge-blue">{link.clicks} cliques</div>
+                  <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                    {link.clicks} cliques
+                  </div>
                 </div>
               ))}
             </div>
@@ -385,11 +392,11 @@ export default function DashboardPage() {
       </section>
 
       <section className="mb-4">
-        <div className="card p-4">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold">Configuração de afiliados</h2>
-              <p className="text-sm text-[var(--muted)]">
+              <p className="text-sm text-gray-600">
                 Blocos prontos para você continuar as próximas telas do clone.
               </p>
             </div>
@@ -397,15 +404,15 @@ export default function DashboardPage() {
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {affiliateCards.map((card) => (
-              <div key={card.nome} className="rounded-xl border border-[var(--line)] p-4">
+              <div key={card.nome} className="rounded-xl border border-gray-200 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h3 className="font-bold">{card.nome}</h3>
-                    <p className="mt-1 text-sm text-[var(--muted)]">{card.descricao}</p>
+                    <p className="mt-1 text-sm text-gray-600">{card.descricao}</p>
                   </div>
                   <span
-                    className={`badge ${
-                      card.status === "Conectado" ? "badge-green" : "badge-yellow"
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      card.status === "Conectado"? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
                     {card.status}
@@ -413,13 +420,13 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mt-4 space-y-2">
-                  <input className="px-3 py-2" placeholder="Digite sua chave / ID" />
-                  <input className="px-3 py-2" placeholder="Link de afiliado" />
+                  <input className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Digite sua chave / ID" />
+                  <input className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" placeholder="Link de afiliado" />
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                  <button className="btn btn-primary">Salvar</button>
-                  <button className="btn btn-secondary">Divulgar</button>
+                  <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Salvar</button>
+                  <button className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Divulgar</button>
                 </div>
               </div>
             ))}
@@ -428,71 +435,71 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.45fr_1fr]">
-        <div className="card overflow-hidden">
-          <div className="border-b border-[var(--line)] px-4 py-3">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="border-b border-gray-200 px-4 py-3">
             <h2 className="text-base font-bold">Meus links</h2>
           </div>
 
-          {links.length === 0 ? (
-            <div className="p-4 text-sm text-[var(--muted)]">
+          {links.length === 0? (
+            <div className="p-4 text-sm text-gray-600">
               Nenhum link criado ainda.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="table-clean">
-                <thead>
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-600">
                   <tr>
-                    <th>Título</th>
-                    <th>Short link</th>
-                    <th>Cliques</th>
-                    <th>Ações</th>
+                    <th className="px-4 py-3">Título</th>
+                    <th className="px-4 py-3">Short link</th>
+                    <th className="px-4 py-3">Cliques</th>
+                    <th className="px-4 py-3">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {links.map((link) => {
                     const linkCompleto =
-                      typeof window !== "undefined"
-                        ? `${window.location.origin}/${link.shortCode}`
+                      typeof window!== "undefined"
+                       ? `${window.location.origin}/${link.shortCode}`
                         : `/${link.shortCode}`;
 
                     return (
-                      <tr key={link.id}>
-                        <td>
+                      <tr key={link.id} className="border-b border-gray-100">
+                        <td className="px-4 py-3">
                           <div className="font-semibold">{link.title}</div>
-                          <div className="mt-1 text-xs text-[var(--muted)] line-clamp-2">
+                          <div className="mt-1 text-xs text-gray-600 line-clamp-2">
                             {link.url}
                           </div>
                         </td>
-                        <td>
+                        <td className="px-4 py-3">
                           <a
                             href={linkCompleto}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[var(--primary)]"
+                            className="text-blue-600 hover:underline"
                           >
                             {link.shortCode}
                           </a>
                         </td>
-                        <td>{link.clicks}</td>
-                        <td>
+                        <td className="px-4 py-3">{link.clicks}</td>
+                        <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-2">
                             <button
-                              className="btn btn-secondary"
+                              className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                               onClick={() => copiarLink(link.shortCode)}
                             >
                               Copiar
                             </button>
 
                             <button
-                              className="btn btn-primary"
+                              className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
                               onClick={() => enviarTelegram(link)}
                               disabled={enviandoId === link.id}
                             >
-                              {enviandoId === link.id ? "Enviando..." : "Telegram"}
+                              {enviandoId === link.id? "Enviando..." : "Telegram"}
                             </button>
 
                             <button
-                              className="btn btn-danger"
+                              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                               onClick={() => excluirLink(link.id)}
                             >
                               Excluir
@@ -509,39 +516,39 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="alert-success p-4">
-            <div className="font-bold">Conta conectada</div>
-            <div className="mt-1 text-sm">
+          <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+            <div className="font-bold text-green-900">Conta conectada</div>
+            <div className="mt-1 text-sm text-green-800">
               Usuária: <strong>{session.user?.email}</strong>
             </div>
-            <div className="mt-1 text-sm">
+            <div className="mt-1 text-sm text-green-800">
               Plano atual: <strong>{planoAtual}</strong>
             </div>
           </div>
 
-          <div className="card p-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
             <h2 className="text-base font-bold">Telegram</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 text-sm text-gray-600">
               Esse bloco já conversa com sua rota atual de envio.
             </p>
 
-            <div className="mt-4 rounded-xl border border-[var(--line)] p-4">
+            <div className="mt-4 rounded-xl border border-gray-200 p-4">
               <div className="text-sm font-semibold">Bot pronto para automação</div>
-              <div className="mt-1 text-xs text-[var(--muted)]">
+              <div className="mt-1 text-xs text-gray-600">
                 Use o botão “Telegram” nos links para disparar ofertas.
               </div>
             </div>
           </div>
 
-          <div className="card p-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-4">
             <h2 className="text-base font-bold">Próximo bloco</h2>
-            <p className="mt-1 text-sm text-[var(--muted)]">
+            <p className="mt-1 text-sm text-gray-600">
               A próxima continuidade ideal é criar a tela interna de “Canais/Grupos”
               com abas tipo Telegram, WhatsApp, Shopee, Amazon e Mercado Livre.
             </p>
           </div>
         </div>
       </section>
-    </AdminShell>
+    </>
   );
 }

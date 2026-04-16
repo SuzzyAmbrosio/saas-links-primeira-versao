@@ -46,7 +46,7 @@ function Sidebar() {
           S
         </div>
         <div>
-          <p className="text-[13px] font-bold text-slate-700">DivulgaLinks</p>
+          <p className="text-[13px] font-bold text-slate-700">PostaLinksAuto</p>
         </div>
       </div>
 
@@ -118,13 +118,13 @@ function Topbar() {
   );
 }
 
-function StarterBanner() {
+function InicianteBanner() {
   return (
     <div className="mb-5 rounded-xl border border-amber-400 bg-amber-100 px-5 py-4">
       <div className="flex flex-col items-center justify-between gap-3 text-center md:flex-row md:text-left">
         <p className="text-[13px] text-amber-900">
           <strong>⚠ Atenção:</strong> Você está utilizando o plano{" "}
-          <strong>STARTER (7 dias grátis)</strong>, que possui limitações.
+          <strong>INICIANTE (7 dias grátis)</strong>, que possui limitações.
         </p>
         <Link
           href="/upgrade"
@@ -272,7 +272,7 @@ export default function ConfigTelegramPage() {
 
         <main className="min-w-0 flex-1 p-4 md:p-6">
           <Topbar />
-          <StarterBanner />
+          <InicianteBanner />
 
           <div className="mb-5 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 md:flex-row md:items-center md:justify-between">
             <div>
